@@ -93,13 +93,13 @@ class Graph:
         differences = (time_arrv_diff - time_dep_diff) >= 0
         valid_time_arrv_diff = time_arrv_diff[differences]
 
-        return conn, valid_time_arrv_diff
+        return valid_time_arrv_diff
 
     def get_earliest_conn(self, start_stop: pd.Series, end_stop: pd.Series) -> pd.Series:
         '''Returns the earliest connection between two stops'''
-        conn, valid_time_arrv_diff = self.get_conn_valid_time_arrivals(start_stop, end_stop)
+        valid_time_arrv_diff = self.get_conn_valid_time_arrivals(start_stop, end_stop)
 
-        return conn.loc[valid_time_arrv_diff.idxmin()] if len(valid_time_arrv_diff) > 0 else pd.Series()
+        return self.conn_graph.loc[valid_time_arrv_diff.idxmin()] if len(valid_time_arrv_diff) > 0 else pd.Series()
     
     def get_earliest_from(self, start_stop: pd.Series):
         '''Returns all earliest connections to all neighbouring stops'''
@@ -108,7 +108,7 @@ class Graph:
                 (i, end_stop) in self.get_neighbour_stops(start_stop).iterrows()]
         return [conn for conn in possible_conns if len(conn) > 0]
 
-    def cost_getting_to(self, next_idx: int, curr_idx: int = None) -> int:
+    def time_cost_between_conns(self, next_idx: int, curr_idx: int = None) -> int:
         cost = diff(self.conn_graph.loc[next_idx, 'arrival_sec'], self.conn_graph.loc[curr_idx, 'arrival_sec'])
         return cost
     
