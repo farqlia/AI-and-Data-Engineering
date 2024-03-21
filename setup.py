@@ -18,7 +18,7 @@ __version__ = re.search(
 with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
     print(f.read().splitlines())
 
-with open(os.path.join(os.path.dirname(__file__), 'requirements.txt'), encoding=) as f:
+with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
     required = f.read().splitlines()
 
 setup(
