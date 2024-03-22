@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ai_data_eng.searching.graph import Graph, add_constant_change_time
+from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing
 from ai_data_eng.searching.utils import time_to_normalized_sec
 
 DATA_DIR = Path('../data')
@@ -43,12 +43,50 @@ def test_null(g):
     df = pd.DataFrame(data)
     print(df['set_of_numbers'] == '')
 
-def test_outgoing_conn(g):
-    dep_time = time_to_normalized_sec('08:02:00')
-    g.add_conn(dep_time, g.rename_stop(g.conn_at_index(64785)), -1)
-    # g.conn_graph.loc[-1, 'line'] = 4
-    for row in g.get_earliest_from(g.conn_at_index(-1)):
-        print(row)
 
 
+def test_outgoing_from(g):
+    unique_conns = g.conn_graph.loc[g.conn_graph['start_stop'] == 'PL. GRUNWALDZKI', ['start_stop',
+       'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
+       'end_stop_lon']].drop_duplicates()
+    print(unique_conns[['start_stop',
+       'end_stop']])
 
+
+def test_is_changing(g):
+    stop = g.stop_as_tuple(g.rename_stop(g.conn_at_index(14027)))
+    print(g.conn_at_index(14027))
+    print(is_changing(g.conn_graph.loc[14025:14028], stop, 'D'))
+
+
+def test_loop(g):
+    dep_time = time_to_normalized_sec('08:00:00')
+    stop = 'PL. GRUNWALDZKI'
+    line = '2'
+    print([candidate_start_stop
+           for candidate_start_stop in g.get_possible_stops_t(stop)])
+
+    [g.get_earliest_conn(dep_time, candidate_start_stop, end_stop, line)
+        for candidate_start_stop in g.get_possible_stops(stop) for
+        end_stop in g.get_neighbour_stops_t(candidate_start_stop)]
+
+def test_outgoing_from(g):
+    index = 1
+    print(g.rename_stop(g.conn_at_index(index)))
+    conns = g.get_earliest_from(time_to_normalized_sec('08:00:00'), g.stop_as_tuple(g.rename_stop(g.conn_at_index(index))), '')
+    print([conn for conn in conns])
+
+
+def test_outgoing_from_2(g):
+    # ('PL. GRUNWALDZKI', 51.11114106, 17.0611933)
+    print(g.get_neighbour_stops_t(('PL. GRUNWALDZKI', 51.11114106, 17.0611933)))
+    conns = g.get_earliest_from(time_to_normalized_sec('20:32:00'), ('PL. GRUNWALDZKI', 51.11114106, 17.0611933), '')
+    print([conn for conn in conns])
+
+
+def test_different_approach(g):
+    conns = g.conn_graph[g.conn_graph['start_stop'] == 'PL. GRUNWALDZKI']
+    grouped = conns.groupby(['start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
+       'end_stop_lon'])
+    first_rows = grouped.first()
+    print(first_rows)
