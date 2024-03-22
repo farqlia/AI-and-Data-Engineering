@@ -31,10 +31,6 @@ class Graph:
         self.conn_graph.loc[:, 'departure_sec'] = self.conn_graph['departure_time'].apply(time_to_normalized_sec)
         self.conn_graph.loc[:, 'arrival_sec'] = self.conn_graph['arrival_time'].apply(time_to_normalized_sec)
 
-        # self.conn_graph = self.conn_graph.sort_values(by=['arrival_sec', 'departure_sec'])
-
-    def get_start_idx(self):
-        return -1
 
     def add_conn(self, dep_time: int, stop: Stop, index: int):
          self.conn_graph.loc[index] = pd.Series({'line': '', 'start_stop': stop[0], 'end_stop': stop[0], 'departure_sec': dep_time, 'arrival_sec': dep_time,
@@ -54,15 +50,7 @@ class Graph:
     def compute_stop_coords(self, stop: str):
         stops = self.get_possible_stops(stop)
         return stops.iloc[0][['stop_lat', 'stop_lon']]
-    
-    def get_end_stop(self, stop: str):
-        coords = self.compute_stop_coords(stop)
-        return pd.Series({'end_stop': stop, 'end_stop_lat': coords['end_stop_lat'], 'end_stop_lon': coords['end_stop_lon']})
-    
-    def get_stop_names(self):
-        '''? this may not make sense because sometimes the routes are different'''
-        return self.conn_graph['start_stop'].unique()
-    
+
     def stop_as_tuple(self, stop):
         return (stop['stop'], stop['stop_lat'], stop['stop_lon'])
     
@@ -96,30 +84,22 @@ class Graph:
         n_df = self.get_neighbour_stops(stop)
         return [self.stop_as_tuple(s) for (i, s) in n_df.iterrows()]
 
-    def get_conn_valid_time_arrivals(self, dep_time: int, prev_stop: Stop, next_stop: Stop, line: str=None) -> pd.Series:
-        conn = self.conn_graph[self.is_start_equal_to(prev_stop)
-                               & self.is_end_equal_to(next_stop) & self.is_line_valid()]
- 
-        time_arrv_diff = diff(conn['arrival_sec'], dep_time)
-        time_dep_diff = diff(conn['departure_sec'], self.change_time_compute(conn, prev_stop, dep_time, line))
-        
-        differences = (time_arrv_diff - time_dep_diff) >= 0
-        valid_time_arrv_diff = time_arrv_diff[differences]
-
-        return valid_time_arrv_diff
-
-    def get_earliest_conn(self, dep_time: int, prev_stop: Stop, next_stop: Stop, line: str=None) -> pd.Series:
-        '''Returns the earliest connection between two stops'''
-        valid_time_arrv_diff = self.get_conn_valid_time_arrivals(dep_time, prev_stop, next_stop, line)
-
-        return self.conn_graph.loc[valid_time_arrv_diff.idxmin()] if len(valid_time_arrv_diff) > 0 else pd.Series()
-
     def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str=None):
         '''Returns all earliest connections to all neighbouring stops'''
-        possible_conns = [self.get_earliest_conn(dep_time, candidate_start_stop, end_stop, line)
-                          for candidate_start_stop in self.get_possible_stops_t(start_stop[0]) for
-                          end_stop in self.get_neighbour_stops_t(candidate_start_stop)]
-        return [conn for conn in possible_conns if len(conn) > 0]
+        possible_conns = self.conn_graph[self.conn_graph['start_stop'] == start_stop[0]]
+
+        time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
+        time_dep_diff = diff(possible_conns['departure_sec'],
+                             self.change_time_compute(possible_conns, start_stop, dep_time, line))
+
+        differences = (time_arrv_diff - time_dep_diff) >= 0
+        valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
+
+        first_conns = ((possible_conns.loc[valid_time_arrv_diff.index]
+                       .groupby(['start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
+                       .head(1))
+
+        return first_conns
 
     def time_cost_between_conns(self, next_idx: int, curr_idx: int = None) -> int:
         cost = diff(self.conn_graph.loc[next_idx, 'arrival_sec'], self.conn_graph.loc[curr_idx, 'arrival_sec'])
@@ -127,11 +107,6 @@ class Graph:
     
     def conn_at_index(self, index: int) -> pd.Series:
         return self.conn_graph.loc[index]
-
-    def get_unique_conns_from_stop(self, stop_name: str) -> pd.DataFrame:
-        return self.conn_graph.loc[self.conn_graph['start_stop'] == stop_name, ['start_stop',
-       'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
-       'end_stop_lon']].drop_duplicates()
 
 
 def is_changing(conns, stop: Stop, line: str) -> pd.DataFrame:

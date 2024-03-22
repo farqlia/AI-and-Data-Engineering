@@ -47,15 +47,15 @@ def find_path(graph: Graph, start_stop: str, goal_stop: str, leave_hour: str):
             # theory - first found is the best
             break
 
-        for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']):
+        for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
-            new_cost = cost + graph.time_cost_between_conns(next_conn.name, conn.name)
-            next_stop_id = graph.stop_as_tuple(graph.rename_stop(next_conn))
+            new_cost = cost + graph.time_cost_between_conns(next_conn.Index, conn.name)
+            next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
             if next_stop_id not in cost_so_far or new_cost < cost_so_far[next_stop_id]:
                 cost_so_far[next_stop_id] = new_cost
                 frontier.put((new_cost, next_stop_id))
-                came_from_conn[next_conn.name] = conn.name
-                stop_conn[next_stop_id] = next_conn.name
+                came_from_conn[next_conn.Index] = conn.name
+                stop_conn[next_stop_id] = next_conn.Index
 
     return goal_stop_index, came_from_conn, cost_so_far
 

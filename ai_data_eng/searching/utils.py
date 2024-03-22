@@ -13,7 +13,7 @@ def to_seconds(time: str) -> int:
 def time_to_normalized_sec(time: str) -> int:
     return to_seconds(time) % (3600 * 24)
 
-def diff(ts: Union[pd.Series, int], td: int) -> int:
+def diff(ts: Union[pd.Series, int], td: int) -> Union[int, pd.Series]:
     '''Function that returns difference between ts and td times expressed as seconds 
         - note that this will never be a negative value'''
     d = ts - td 
