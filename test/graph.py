@@ -7,7 +7,7 @@ import pytest
 from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing
 from ai_data_eng.searching.utils import time_to_normalized_sec
-from ai_data_eng.searching.a_star import MaxVelocityHeuristic
+from ai_data_eng.searching.a_star import MaxVelocityTimeHeuristic
 
 @pytest.fixture
 def g():
@@ -89,5 +89,13 @@ def test_heuristic(g):
     s2 = ('Kliniki - Politechnika Wrocławska', 51.10920637, 17.06641438)
     s3 = ('BISKUPIN', 51.10125726, 17.10914151)
     conn = g.conn_at_index(550448)
-    print(MaxVelocityHeuristic().__class__.__name__)
-    print(MaxVelocityHeuristic().compute(s1, s2, s3, conn))
+    print(MaxVelocityTimeHeuristic().__class__.__name__)
+    print(MaxVelocityTimeHeuristic().compute(s1, s2, s3, conn))
+
+
+def test_change_cost(g):
+    stop = g.stop_as_tuple(g.rename_stop(g.conn_at_index(14027)))
+    print(g.conn_at_index(14027))
+    print(g.get_earliest_from(time_to_normalized_sec('23:01:00'), stop))
+    print(g.change_cost_between_conns(g.conn_at_index(14028), stop, 'D'))
+    print(g.change_cost_between_conns(g.conn_at_index(319982), stop, '19'))

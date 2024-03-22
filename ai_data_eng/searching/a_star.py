@@ -2,18 +2,19 @@ import re
 from pathlib import Path
 from queue import PriorityQueue
 from abc import ABC, abstractmethod
-from typing import NamedTuple
+from typing import NamedTuple, Callable
+from enum import Enum
 from functools import partial
 
 import pandas as pd
 
 from ai_data_eng.searching.globals import A_STAR_FILE, DATA_DIR
 from ai_data_eng.searching.graph import Graph, Stop
-from ai_data_eng.searching.searchning import a_star_print_info, run_solution, assert_connection_path, idxs_to_nodes, print_path
+from ai_data_eng.searching.searchning import a_star_print_info, run_solution, assert_connection_path, idxs_to_nodes, \
+    print_path, OptimizationType, get_cost_func
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time, distance_m, diff
 
 pd.options.mode.chained_assignment = None
-
 
 class Heuristic(ABC):
 
@@ -26,7 +27,7 @@ class Heuristic(ABC):
         pass
 
 
-class MaxVelocityHeuristic(Heuristic):
+class MaxVelocityTimeHeuristic(Heuristic):
     def __init__(self):
         super().__init__()
         self.max_vel = 1
@@ -40,7 +41,7 @@ class MaxVelocityHeuristic(Heuristic):
         return (distance_m(goal_stop, start_stop) / self.max_vel) <= actual_time
 
 
-class WeightedAverageHeuristic(Heuristic):
+class WeightedAverageTimeHeuristic(Heuristic):
 
     def __init__(self, alpha=0.01, velocity=10):
         self.alpha = alpha
@@ -58,7 +59,16 @@ class WeightedAverageHeuristic(Heuristic):
         return (distance_m(goal_stop, start_stop) / self.velocity) <= actual_time
 
 
-def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: str, leave_hour: str):
+class ChangeHeuristic(Heuristic):
+
+    def __init__(self):
+        pass
+
+
+
+
+def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
+              start_stop: str, goal_stop: str, leave_hour: str):
 
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
@@ -100,7 +110,7 @@ def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: st
             for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
                 # cost of commuting start --> current and current --> next
                 next_stop = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
-                new_cost = cost + graph.time_cost_between_conns(next_conn.Index, conn.name)
+                new_cost = cost + cost_func(next_conn.Index, conn.name)
                 heuristic_cost = heuristic.compute(current, next_stop, goal_stop, next_conn)
                 approx_goal_cost = new_cost + heuristic_cost
                 if next_stop not in cost_so_far or new_cost < cost_so_far[next_stop]:
@@ -114,11 +124,11 @@ def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: st
     return goal_stop_index, came_from_conn, cost_so_far
 
 
-def a_star(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic):
+def a_star(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, criterion: OptimizationType):
     with open(A_STAR_FILE / heuristic.__class__.__name__, mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
-        graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(partial(find_path, heuristic=heuristic), start_stop, goal_stop,
-                                                                                 leave_hour)
+        graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(partial(find_path, heuristic=heuristic),
+                                                                                 start_stop, goal_stop, leave_hour, criterion)
         #assert heuristic.check(graph.compute_stop_coords(start_stop), graph.compute_stop_coords(goal_stop), solution_cost)
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)

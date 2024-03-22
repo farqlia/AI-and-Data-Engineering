@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pandas as pd
 
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
@@ -38,7 +40,7 @@ def print_path(connections: dict, print_to=None):
     for conn in connections:
         print(
             f'{conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}]',
-        file=print_to)
+            file=print_to)
 
 
 def assert_connection_path(dept_time, connections):
@@ -50,15 +52,27 @@ def assert_connection_path(dept_time, connections):
     return True
 
 
-def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str):
+class OptimizationType(Enum):
+    TIME = 1,
+    CHANGES = 2
+
+
+def get_cost_func(graph: Graph, criterion: OptimizationType):
+    return graph.time_cost_between_conns if criterion == OptimizationType.TIME else graph.change_cost_between_conns
+
+
+def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str,
+                 criterion: OptimizationType = OptimizationType.TIME):
     start = timer()
     connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
                                    usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
                                             'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
                                             'end_stop_lon'])
     graph = Graph(connection_graph, add_constant_change_time)
+
     goal_index, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
-                                                      goal_stop=goal_stop, leave_hour=leave_hour)
+                                                      goal_stop=goal_stop, leave_hour=leave_hour,
+                                                      cost_func=get_cost_func(graph, criterion))
     end = timer()
     elapsed_time = (end - start)
     solution_cost = costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))]

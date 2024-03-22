@@ -1,20 +1,24 @@
 import re
 from pathlib import Path
 from queue import PriorityQueue
+from typing import Callable
 
 import pandas as pd
 
 from ai_data_eng.searching.globals import DIJKSTRA_FILE
 from ai_data_eng.searching.graph import Graph
-from ai_data_eng.searching.searchning import print_info, run_solution, assert_connection_path, idxs_to_nodes, print_path
+from ai_data_eng.searching.searchning import print_info, run_solution, assert_connection_path, idxs_to_nodes, \
+    print_path, OptimizationType
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
 
-def find_path(graph: Graph, start_stop: str, goal_stop: str, leave_hour: str):
+
+def find_path(graph: Graph, cost_func: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
+
 
     cost_so_far = {}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
@@ -45,7 +49,7 @@ def find_path(graph: Graph, start_stop: str, goal_stop: str, leave_hour: str):
 
         for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
-            new_cost = cost + graph.time_cost_between_conns(next_conn.Index, conn.name)
+            new_cost = cost + cost_func(next_conn.Index, conn.name)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
             if next_stop_id not in cost_so_far or new_cost < cost_so_far[next_stop_id]:
                 cost_so_far[next_stop_id] = new_cost
@@ -56,11 +60,11 @@ def find_path(graph: Graph, start_stop: str, goal_stop: str, leave_hour: str):
     return goal_stop_index, came_from_conn, cost_so_far
 
 
-def dijkstra(start_stop: str, goal_stop: str, leave_hour: str, change_time=0):
+def dijkstra(start_stop: str, goal_stop: str, leave_hour: str):
     with open(DIJKSTRA_FILE, mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(find_path, start_stop, goal_stop,
-                                                                                 leave_hour, change_time)
+                                                                                 leave_hour, OptimizationType.TIME)
 
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)

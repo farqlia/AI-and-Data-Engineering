@@ -102,7 +102,10 @@ class Graph:
     def time_cost_between_conns(self, next_idx: int, curr_idx: int = None) -> int:
         cost = diff(self.conn_graph.loc[next_idx, 'arrival_sec'], self.conn_graph.loc[curr_idx, 'arrival_sec'])
         return cost
-    
+
+    def change_cost_between_conns(self, next_conn: pd.Series, curr_stop: Stop, line: str) -> int:
+        return 1 if is_changing(next_conn, curr_stop, line) else 0
+
     def conn_at_index(self, index: int) -> pd.Series:
         return self.conn_graph.loc[index]
 
