@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 import numpy as np
 import pandas as pd
@@ -77,6 +77,10 @@ class Graph:
         '''Returns neighbouring end stops'''
         # return self.conn_graph[self.conn_graph['start_stop'] == start_stop][['line', 'end_stop']].drop_duplicates()
         return self.rename_stop(self.conn_graph[self.is_start_equal_to(stop)][END_STOP_COLS]).drop_duplicates()
+
+    def get_neighbour_lines(self, stop: str) -> List:
+        l_df = self.conn_graph.loc[self.conn_graph['start_stop'] == stop, ['end_stop', 'line']].drop_duplicates()
+        return [t for t in l_df.itertuples()]
 
     def get_neighbour_stops_t(self, stop: Stop) -> List[Stop]:
         n_df = self.get_neighbour_stops(stop)

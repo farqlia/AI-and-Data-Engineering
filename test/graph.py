@@ -99,3 +99,9 @@ def test_change_cost(g):
     print(g.get_earliest_from(time_to_normalized_sec('23:01:00'), stop))
     print(g.change_cost_between_conns(g.conn_at_index(14028), stop, 'D'))
     print(g.change_cost_between_conns(g.conn_at_index(319982), stop, '19'))
+
+
+def test_neigh_lines(g):
+    print(g.get_possible_stops_t('PL. GRUNWALDZKI'))
+    print(g.get_neighbour_lines('PL. GRUNWALDZKI'))
+    print(g.compute_stop_coords('PL. GRUNWALDZKI'))

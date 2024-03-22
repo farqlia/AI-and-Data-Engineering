@@ -16,6 +16,7 @@ from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time, dis
 
 pd.options.mode.chained_assignment = None
 
+
 class Heuristic(ABC):
 
     @abstractmethod
@@ -34,7 +35,8 @@ class MaxVelocityTimeHeuristic(Heuristic):
 
     def compute(self, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
         if conn.arrival_sec > conn.departure_sec:
-            self.max_vel = max(self.max_vel, distance_m(stop_from, stop_to) / diff(conn.arrival_sec, conn.departure_sec))
+            self.max_vel = max(self.max_vel,
+                               distance_m(stop_from, stop_to) / diff(conn.arrival_sec, conn.departure_sec))
         return distance_m(goal_stop, stop_to) / self.max_vel
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
@@ -65,11 +67,8 @@ class ChangeHeuristic(Heuristic):
         pass
 
 
-
-
 def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
               start_stop: str, goal_stop: str, leave_hour: str):
-
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
 
@@ -90,7 +89,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
         j -= 1
 
     with open(DATA_DIR / ('a_star_runs/' + re.sub(r"\W+", "", start_stop) + '-' + re.sub(r"\W+", "", goal_stop[0])),
-                  mode='w', encoding='utf-8') as f:
+              mode='w', encoding='utf-8') as f:
 
         i = 0
         while not frontier.empty():
@@ -127,9 +126,10 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 def a_star(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, criterion: OptimizationType):
     with open(A_STAR_FILE / heuristic.__class__.__name__, mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
-        graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(partial(find_path, heuristic=heuristic),
-                                                                                 start_stop, goal_stop, leave_hour, criterion)
-        #assert heuristic.check(graph.compute_stop_coords(start_stop), graph.compute_stop_coords(goal_stop), solution_cost)
+        graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(
+            partial(find_path, heuristic=heuristic),
+            start_stop, goal_stop, leave_hour, criterion)
+        # assert heuristic.check(graph.compute_stop_coords(start_stop), graph.compute_stop_coords(goal_stop), solution_cost)
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
