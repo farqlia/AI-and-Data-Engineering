@@ -1,6 +1,10 @@
+import math
 from typing import Union
 
+import geopy.distance
 import pandas as pd
+
+from ai_data_eng.searching.globals import Stop
 
 
 def separate_time(time):
@@ -29,3 +33,17 @@ def sec_to_time(seconds: int) -> str:
     minutes = (seconds % 3600) // 60 
     secs = (seconds % 3600) % 60 
     return f'{hour:02d}:{minutes:02d}:{secs:02d}'
+
+
+def distance_m(stop_from: Stop, stop_to: Stop):
+    return (geopy.distance.geodesic((stop_from[1], stop_from[2]), (stop_to[1], stop_to[2])).m)
+
+def distance_round(stop_from: Stop, stop_to: Stop):
+    straight_dis = distance_m(stop_from, stop_to)
+    return round(math.pi * straight_dis / 2, 2)
+
+def approximate_velocity(stop_from: Stop, stop_to: Stop, conn_time: float):
+    return distance_m(stop_from, stop_to) / conn_time
+
+def approximate_velocity_round(stop_from: Stop, stop_to: Stop, conn_time: float):
+    return distance_round(stop_from, stop_to) / conn_time

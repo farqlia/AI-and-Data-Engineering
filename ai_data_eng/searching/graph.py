@@ -5,15 +5,13 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+from ai_data_eng.searching.globals import Stop
 from ai_data_eng.searching.utils import time_to_normalized_sec, diff
 
 pd.options.mode.chained_assignment = None
 
-DATA_DIR = Path('../data')
-
 END_STOP_COLS = ['end_stop', 'end_stop_lat', 'end_stop_lon']
 START_STOP_COLS = ['start_stop', 'start_stop_lat', 'start_stop_lon']
-Stop = Tuple[str, float, float]
 
 
 class Graph:
@@ -49,7 +47,7 @@ class Graph:
     # We could take as the initial stop the closest stop to the goal stop
     def compute_stop_coords(self, stop: str):
         stops = self.get_possible_stops(stop)
-        return stops.iloc[0][['stop_lat', 'stop_lon']]
+        return stops[['stop_lat', 'stop_lon']].mean()
 
     def stop_as_tuple(self, stop):
         return (stop['stop'], stop['stop_lat'], stop['stop_lon'])
@@ -86,7 +84,7 @@ class Graph:
 
     def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str=None):
         '''Returns all earliest connections to all neighbouring stops'''
-        possible_conns = self.conn_graph[self.conn_graph['start_stop'] == start_stop[0]]
+        possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()]
 
         time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
         time_dep_diff = diff(possible_conns['departure_sec'],

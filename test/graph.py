@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing
 from ai_data_eng.searching.utils import time_to_normalized_sec
-
-DATA_DIR = Path('../data')
+from ai_data_eng.searching.a_star import MaxVelocityHeuristic
 
 @pytest.fixture
 def g():
@@ -82,3 +82,12 @@ def test_different_approach(g):
 
     for row in first_rows.itertuples():
         print(row.Index)
+
+
+def test_heuristic(g):
+    s1 = ('PL. GRUNWALDZKI', 51.111452, 17.060529)
+    s2 = ('Kliniki - Politechnika Wrocławska', 51.10920637, 17.06641438)
+    s3 = ('BISKUPIN', 51.10125726, 17.10914151)
+    conn = g.conn_at_index(550448)
+    print(MaxVelocityHeuristic().__class__.__name__)
+    print(MaxVelocityHeuristic().compute(s1, s2, s3, conn))

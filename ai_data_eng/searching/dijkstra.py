@@ -11,9 +11,6 @@ from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
 
-DATA_DIR = Path('../data')
-
-
 def find_path(graph: Graph, start_stop: str, goal_stop: str, leave_hour: str):
     
     frontier = PriorityQueue()
