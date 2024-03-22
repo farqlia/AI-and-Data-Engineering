@@ -30,10 +30,11 @@ def idxs_to_nodes(graph: Graph, goal_idx: int, conn_idxs: dict):
     return [graph.conn_at_index(idx) for idx in idx_path[1:]]
 
 
-def print_path(connections: dict):
+def print_path(connections: dict, print_to=None):
     for conn in connections:
         print(
-            f'{conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}]')
+            f'{conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}]',
+        file=print_to)
 
 
 def assert_connection_path(dept_time, connections):

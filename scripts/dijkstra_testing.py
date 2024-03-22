@@ -36,10 +36,27 @@ test_cases = [
     },
     {
         "start_stop": "Małkowice - Główna", "goal_stop": "Kiełczów - Zgodna", "leave_hour": "10:39:00"
+    },
+    {
+        "start_stop": "Brzezia Łąka - Główna", "goal_stop": "Arkady (Capitol)", "leave_hour": "11:15:00"
+    },
+    {
+        "start_stop": "rondo Św. Ojca Pio", "goal_stop": "Sowia", "leave_hour": "17:16:00"
+    },
+    {
+        "start_stop": "Pisarzowice - Graniczna", "goal_stop": "KARŁOWICE", "leave_hour": "05:10:00"
+    },
+    {
+        "start_stop": "Marchewkowa", "goal_stop": "Kominiarska", "leave_hour": "00:08:00"
+    },
+    {
+        "start_stop": "Szymanów (Widawska)", "goal_stop": "Strumykowa", "leave_hour": "00:35:00"
+    },
+    {
+        "start_stop": "Miękinia Cegielnia", "goal_stop": "Rdestowa", "leave_hour": "09:09:00"
     }
-
 ]
 
 for test_case in test_cases:
     dijkstra(**test_case)
-    print()
+
