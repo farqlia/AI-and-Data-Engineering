@@ -20,7 +20,7 @@ pd.options.mode.chained_assignment = None
 class Heuristic(ABC):
 
     @abstractmethod
-    def compute(self, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
+    def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
         return -1
 
     @abstractmethod
@@ -33,7 +33,7 @@ class MaxVelocityTimeHeuristic(Heuristic):
         super().__init__()
         self.max_vel = 1
 
-    def compute(self, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
+    def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
         if conn.arrival_sec > conn.departure_sec:
             self.max_vel = max(self.max_vel,
                                distance_m(stop_from, stop_to) / diff(conn.arrival_sec, conn.departure_sec))
@@ -49,7 +49,7 @@ class WeightedAverageTimeHeuristic(Heuristic):
         self.alpha = alpha
         self.velocity = velocity
 
-    def compute(self, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
+    def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
         dist_from_prev = distance_m(stop_from, stop_to)
         time_from_prev = diff(conn.arrival_sec, conn.departure_sec)
         if time_from_prev > 0:
@@ -63,12 +63,18 @@ class WeightedAverageTimeHeuristic(Heuristic):
 
 class ChangeHeuristic(Heuristic):
 
-    def __init__(self):
+    def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop, conn) -> int:
+        return distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * self.N
+
+    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
         pass
+
+    def __init__(self):
+        self.N = 2
 
 
 def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
-              start_stop: str, goal_stop: str, leave_hour: str):
+              neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
 
@@ -76,11 +82,15 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
     stop_conn = {}
+
     goal_stop_coords = graph.compute_stop_coords(goal_stop)
     goal_stop = (goal_stop, goal_stop_coords['stop_lat'], goal_stop_coords['stop_lon'])
+    start_stop_coords = graph.compute_stop_coords(start_stop)
+    start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
+
     # given only stop name consider all possible start stops??
     j = -1
-    for candidate_start_stop in graph.get_possible_stops_t(start_stop):
+    for candidate_start_stop in graph.get_possible_stops_t(start_stop[0]):
         cost_so_far[candidate_start_stop] = 0
         graph.add_conn(dep_time, candidate_start_stop, j)
         came_from_conn[j] = None
@@ -88,7 +98,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
         frontier.put((cost_so_far[candidate_start_stop], candidate_start_stop))
         j -= 1
 
-    with open(DATA_DIR / ('a_star_runs/' + re.sub(r"\W+", "", start_stop) + '-' + re.sub(r"\W+", "", goal_stop[0])),
+    with open(DATA_DIR / ('a_star_runs/' + re.sub(r"\W+", "", start_stop[0]) + '-' + re.sub(r"\W+", "", goal_stop[0])),
               mode='w', encoding='utf-8') as f:
 
         i = 0
@@ -106,11 +116,12 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 
             print(f'[{i}]', file=f)
             cost = cost_so_far[current]
-            for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
+            for next_conn in neighbours_gen(conn['arrival_sec'], current, conn['line']).itertuples():
                 # cost of commuting start --> current and current --> next
                 next_stop = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
-                new_cost = cost + cost_func(next_conn.Index, conn.name)
-                heuristic_cost = heuristic.compute(current, next_stop, goal_stop, next_conn)
+                new_cost = cost + cost_func(next_conn=next_conn, prev_conn=conn,
+                                            curr_stop=current, line=conn['line'])
+                heuristic_cost = heuristic.compute(start_stop, current, next_stop, goal_stop, next_conn)
                 approx_goal_cost = new_cost + heuristic_cost
                 if next_stop not in cost_so_far or new_cost < cost_so_far[next_stop]:
                     a_star_print_info(next_conn, new_cost, heuristic_cost, file=f)
@@ -133,5 +144,8 @@ def a_star(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristi
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
-        print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)
+        if criterion == OptimizationType.TIME:
+            print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)
+        else:
+            print(f'Total number of changes is {solution_cost}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)

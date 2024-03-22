@@ -78,13 +78,31 @@ class Graph:
         # return self.conn_graph[self.conn_graph['start_stop'] == start_stop][['line', 'end_stop']].drop_duplicates()
         return self.rename_stop(self.conn_graph[self.is_start_equal_to(stop)][END_STOP_COLS]).drop_duplicates()
 
-    def get_neighbour_lines(self, stop: str) -> List:
-        l_df = self.conn_graph.loc[self.conn_graph['start_stop'] == stop, ['end_stop', 'line']].drop_duplicates()
+    def get_neighbour_lines_t(self, stop: Stop) -> List:
+        l_df = self.conn_graph.loc[self.is_start_equal_to(stop), [END_STOP_COLS, 'line']].drop_duplicates()
         return [t for t in l_df.itertuples()]
 
     def get_neighbour_stops_t(self, stop: Stop) -> List[Stop]:
         n_df = self.get_neighbour_stops(stop)
         return [self.stop_as_tuple(s) for (i, s) in n_df.iterrows()]
+
+    def get_lines_from(self, dep_time: int, start_stop: Stop, line: str=None):
+        possible_conns = self.conn_graph[
+            (self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()]
+
+        time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
+        time_dep_diff = diff(possible_conns['departure_sec'],
+                             self.change_time_compute(possible_conns, start_stop, dep_time, line))
+
+        differences = (time_arrv_diff - time_dep_diff) >= 0
+        valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
+
+        first_conns = ((possible_conns.loc[valid_time_arrv_diff.index]
+                        .groupby(
+            ['line', 'start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
+                       .head(1))
+
+        return first_conns
 
     def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str=None):
         '''Returns all earliest connections to all neighbouring stops'''
@@ -103,19 +121,19 @@ class Graph:
 
         return first_conns
 
-    def time_cost_between_conns(self, next_idx: int, curr_idx: int = None) -> int:
-        cost = diff(self.conn_graph.loc[next_idx, 'arrival_sec'], self.conn_graph.loc[curr_idx, 'arrival_sec'])
+    def time_cost_between_conns(self, next_conn: pd.Series, prev_conn: pd.Series, **kwargs) -> int:
+        cost = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
         return cost
 
-    def change_cost_between_conns(self, next_conn: pd.Series, curr_stop: Stop, line: str) -> int:
-        return 1 if is_changing(next_conn, curr_stop, line) else 0
+    def change_cost_between_conns(self, next_conn: pd.Series, prev_conn: pd.Series, line: str, **kwargs) -> int:
+        return 1 if is_changing(next_conn, prev_conn, line) else 0
 
     def conn_at_index(self, index: int) -> pd.Series:
         return self.conn_graph.loc[index]
 
-
-def is_changing(conns, stop: Stop, line: str) -> pd.DataFrame:
-    return (conns['start_stop_lat'] != stop[1]) | (conns['start_stop_lon'] != stop[2]) | ((line != '') & (conns['line'] != line))
+# Problems: changing is badly implemented, also is
+def is_changing(conns, prev_conn: pd.Series, line: str) -> pd.DataFrame:
+    return (conns.start_stop_lat != stop[1]) | (conns.start_stop_lon != stop[2]) | ((line != '') & (conns.line != line))
 
 
 def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str=None, change_time=60):

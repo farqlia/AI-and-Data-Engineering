@@ -66,6 +66,10 @@ def get_cost_func(graph: Graph, criterion: OptimizationType):
     return graph.time_cost_between_conns if criterion == OptimizationType.TIME else graph.change_cost_between_conns
 
 
+def get_neighbours_gen(graph: Graph, criterion: OptimizationType):
+    return graph.get_earliest_from if criterion == OptimizationType.TIME else graph.get_lines_from
+
+
 def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str,
                  criterion: OptimizationType = OptimizationType.TIME):
     start = timer()
@@ -77,7 +81,8 @@ def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour
 
     goal_index, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
                                                       goal_stop=goal_stop, leave_hour=leave_hour,
-                                                      cost_func=get_cost_func(graph, criterion))
+                                                      cost_func=get_cost_func(graph, criterion),
+                                                      neighbours_gen=get_neighbours_gen(graph, criterion))
     end = timer()
     elapsed_time = (end - start)
     solution_cost = costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))]
