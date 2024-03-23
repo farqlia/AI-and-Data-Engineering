@@ -1,5 +1,3 @@
-import re
-from pathlib import Path
 from queue import PriorityQueue
 from typing import Callable
 
@@ -7,7 +5,7 @@ import pandas as pd
 
 from ai_data_eng.searching.globals import DIJKSTRA_FILE
 from ai_data_eng.searching.graph import Graph
-from ai_data_eng.searching.searchning import print_info, run_solution, assert_connection_path, idxs_to_nodes, \
+from ai_data_eng.searching.searchning import run_solution, assert_connection_path, idxs_to_nodes, \
     print_path, OptimizationType
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 

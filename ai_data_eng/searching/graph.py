@@ -1,9 +1,7 @@
-from pathlib import Path
-from typing import Tuple, List, Union
+from typing import List
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 
 from ai_data_eng.searching.globals import Stop
 from ai_data_eng.searching.utils import time_to_normalized_sec, diff
@@ -130,10 +128,10 @@ class Graph:
         cost = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
         return cost
 
-    def change_cost_between_conns(self, next_conn: pd.Series, prev_conn: pd.Series) -> int:
-        are_stops_different = ((next_conn.end_stop != prev_conn.end_stop)
-                               | (next_conn.end_stop_lat != prev_conn.end_stop_lat)
-                               | (next_conn.end_stop_lon != prev_conn.end_stop_lon))
+    def change_cost_between_conns(self, prev_conn: pd.Series, next_conn: pd.Series) -> int:
+        are_stops_different = ((next_conn.start_stop != prev_conn.end_stop)
+                               | (next_conn.start_stop_lat != prev_conn.end_stop_lat)
+                               | (next_conn.start_stop_lon != prev_conn.end_stop_lon))
         is_first_stop = prev_conn.line == ''
         are_lines_different = (not is_first_stop) & (prev_conn.line != next_conn.line)
         is_changing = not is_first_stop and (are_lines_different or are_stops_different)
@@ -153,11 +151,12 @@ class Graph:
 
 # Problems: changing is badly implemented, also is
 def is_changing(conns, stop: Stop, line: str) -> pd.DataFrame:
-    return (conns.start_stop_lat != stop[1]) | (conns.start_stop_lon != stop[2]) | ((line != '') & (conns.line != line))
+    return (conns.start_stop_lat != stop[1]) | (conns.start_stop_lon != stop[2]) | (conns.line != line)
 
 
 def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str = None, change_time=60):
     dept_times = pd.Series(data=dep_time, index=conns.index)
-    is_change = is_changing(conns, stop, line)
-    dept_times.loc[is_change] = (dept_times.loc[is_change] + change_time) % (24 * 3600)
+    if line != '':
+        is_change = is_changing(conns, stop, line)
+        dept_times.loc[is_change] = (dept_times.loc[is_change] + change_time) % (24 * 3600)
     return dept_times

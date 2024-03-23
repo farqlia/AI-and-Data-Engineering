@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Tuple
 
 Stop = Tuple[str, float, float]

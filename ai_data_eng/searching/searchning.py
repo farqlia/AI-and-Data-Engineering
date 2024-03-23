@@ -3,9 +3,9 @@ from typing import Callable
 
 import pandas as pd
 
+from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
 from ai_data_eng.searching.utils import sec_to_time, diff
-from ai_data_eng.searching.globals import DATA_DIR, DEBUG
 
 pd.options.mode.chained_assignment = None
 from timeit import default_timer as timer
