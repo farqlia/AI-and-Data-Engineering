@@ -5,11 +5,11 @@ from typing import Callable
 
 import pandas as pd
 
-from ai_data_eng.searching.globals import A_STAR_RUNS_T_FILE
+from ai_data_eng.searching.globals import A_STAR_RUNS_T
 from ai_data_eng.searching.graph import Graph
 from ai_data_eng.searching.heuristics import Heuristic
 from ai_data_eng.searching.searchning import run_solution, assert_connection_path, idxs_to_nodes, \
-    print_path, OptimizationType, PrioritizedItem
+    print_path, OptimizationType, PrioritizedItem, write_solution_to_file
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
@@ -71,7 +71,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 
 
 def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic):
-    with open(A_STAR_RUNS_T_FILE, mode='a', encoding='utf-8') as f:
+    with open(A_STAR_RUNS_T / 'run', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal_index, came_from, costs, elapsed_time = run_solution(
             partial(find_path, heuristic=heuristic),
@@ -79,5 +79,7 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
-        print(f'Total trip time is {sec_to_time(costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))])}', file=f)
+        solution_cost = sec_to_time(costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))])
+        print(f'Total trip time is {solution_cost}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
+        write_solution_to_file(A_STAR_RUNS_T / 'summary', connections, elapsed_time, solution_cost)

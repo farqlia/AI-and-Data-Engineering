@@ -4,7 +4,7 @@ from queue import PriorityQueue
 from typing import Callable
 
 from ai_data_eng.searching.a_star_time_opt import Heuristic
-from ai_data_eng.searching.globals import A_STAR_RUNS_P_FILE
+from ai_data_eng.searching.globals import A_STAR_RUNS_P
 from ai_data_eng.searching.graph import *
 from ai_data_eng.searching.searchning import a_star_print_info, PrioritizedItem, OptimizationType, run_solution, \
     idxs_to_nodes, assert_connection_path, print_path, write_solution_to_file
@@ -81,7 +81,7 @@ def path_to_list(goal, came_from_conn, stop_conn):
 
 def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
                        heuristic: Heuristic):
-    with open(A_STAR_RUNS_P_FILE, mode='a', encoding='utf-8') as f:
+    with open(A_STAR_RUNS_P / 'run', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal, came_from, costs, elapsed_time = run_solution(
             partial(find_path, heuristic=heuristic),
@@ -94,3 +94,4 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         # write_solution_to_file(A_STAR_RUNS_P / f'{start_stop}-{goal_stop}')
         print(f'Total number of changes is {costs[goal]}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
+        write_solution_to_file(A_STAR_RUNS_P / 'summary', connections, elapsed_time, costs[goal])
