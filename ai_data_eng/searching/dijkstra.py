@@ -14,7 +14,7 @@ from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 pd.options.mode.chained_assignment = None
 
 
-def find_path(graph: Graph, cost_func: Callable, start_stop: str, goal_stop: str, leave_hour: str):
+def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
@@ -47,7 +47,7 @@ def find_path(graph: Graph, cost_func: Callable, start_stop: str, goal_stop: str
             # theory - first found is the best
             break
 
-        for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
+        for next_conn in neighbours_gen(dep_time + cost, current, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
             new_cost = cost + cost_func(next_conn, conn)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
