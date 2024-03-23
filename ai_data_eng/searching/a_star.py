@@ -60,7 +60,7 @@ class WeightedAverageTimeHeuristic(Heuristic):
                 prev_conn: pd.Series, next_conn: pd.Series) -> int:
         dist_from_prev = distance_m(stop_from, stop_to)
         # not sure which times to take here
-        time_from_prev = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
+        time_from_prev = diff(next_conn.arrival_sec, next_conn.departure_sec)
         if time_from_prev > 0:
             self.velocity = self.alpha * (dist_from_prev / time_from_prev) + (1 - self.alpha) * self.velocity
         heuristic_time = distance_m(stop_to, goal_stop) / self.velocity
@@ -90,10 +90,8 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
-    print_info = a_star_print_info(sec_to_time if heuristic.criterion == OptimizationType.TIME else lambda x: round(x, 2))
 
     cost_so_far = {}
-    approx_cost = {}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
     stop_conn = {}
@@ -107,7 +105,6 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     j = -1
     for candidate_start_stop in graph.get_possible_stops_t(start_stop[0]):
         cost_so_far[candidate_start_stop] = 0
-        approx_cost[candidate_start_stop] = 0
         graph.add_conn(dep_time, candidate_start_stop, j)
         came_from_conn[j] = None
         stop_conn[candidate_start_stop] = j
@@ -130,7 +127,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             # theory - first found is the best
             break
 
-        print(f'[{i}]')
+        # print(f'[{i}]')
         cost = cost_so_far[current]
         for next_conn in neighbours_gen(conn['arrival_sec'], current, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
@@ -139,32 +136,28 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             heuristic_cost = heuristic.compute(start_stop, current, next_stop, goal_stop, conn, next_conn)
             approx_goal_cost = new_cost + heuristic_cost
             if next_stop not in cost_so_far or new_cost < cost_so_far[next_stop]:
-                print_info(next_conn, new_cost, heuristic_cost)
+                # print_info(next_conn, new_cost, heuristic_cost)
                 cost_so_far[next_stop] = new_cost
-                approx_cost[next_stop] = approx_goal_cost
                 frontier.put((approx_goal_cost, next_stop))
                 came_from_conn[next_conn.Index] = conn.name
                 stop_conn[next_stop] = next_conn.Index
-        print(json.dumps({f'{k[0]} ({k[1]}, {k[2]})': f'{round(cost_so_far[k], 2)} | {round(approx_cost[k], 2)}' for k in cost_so_far}, indent=4, ensure_ascii=False))
-        print()
         i += 1
 
     return goal_stop_index, came_from_conn, cost_so_far
 
 
 def a_star(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, criterion: OptimizationType):
-    # with open(str(A_STAR_FILE) + heuristic.__class__.__name__, mode='a', encoding='utf-8') as f:
-    f = None
-    print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
-    graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(
-        partial(find_path, heuristic=heuristic),
-        start_stop, goal_stop, leave_hour, criterion)
-    # assert heuristic.check(graph.compute_stop_coords(start_stop), graph.compute_stop_coords(goal_stop), solution_cost)
-    connections = idxs_to_nodes(graph, goal_index, came_from)
-    assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
-    print_path(connections, f)
-    if criterion == OptimizationType.TIME:
-        print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)
-    else:
-        print(f'Total number of changes is {solution_cost}', file=f)
-    print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
+    with open(str(A_STAR_FILE) + heuristic.__class__.__name__, mode='a', encoding='utf-8') as f:
+        print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
+        graph, goal_index, came_from, solution_cost, elapsed_time = run_solution(
+            partial(find_path, heuristic=heuristic),
+            start_stop, goal_stop, leave_hour, criterion)
+        # assert heuristic.check(graph.compute_stop_coords(start_stop), graph.compute_stop_coords(goal_stop), solution_cost)
+        connections = idxs_to_nodes(graph, goal_index, came_from)
+        assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
+        print_path(connections, f)
+        if criterion == OptimizationType.TIME:
+            print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)
+        else:
+            print(f'Total number of changes is {solution_cost}', file=f)
+        print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)

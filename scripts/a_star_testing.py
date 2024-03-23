@@ -8,9 +8,10 @@ test_cases = pd.read_json(DATA_DIR / 'test_cases/test_cases.json')
 test_cases = test_cases.values.tolist()
 
 # a_star(*test_cases[0], heuristic=WeightedAverageTimeHeuristic(), criterion=OptimizationType.TIME)
-
 test_case = {
     "start_stop": "most Grunwaldzki", "goal_stop": "Rynek", "leave_hour": "08:00:00"
 }
 
-a_star(**test_case, heuristic=ChangeHeuristic(), criterion=OptimizationType.CHANGES)
+
+for test_case in test_cases:
+    a_star(*test_case, heuristic=WeightedAverageTimeHeuristic(), criterion=OptimizationType.TIME)
