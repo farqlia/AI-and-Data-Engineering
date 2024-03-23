@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ai_data_eng.searching.a_star_p import find_path
+from ai_data_eng.searching.a_star_changes_opt import find_path
 from ai_data_eng.searching.globals import DATA_DIR, A_STAR_FILE
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
 from ai_data_eng.searching.heuristics import ChangeHeuristic

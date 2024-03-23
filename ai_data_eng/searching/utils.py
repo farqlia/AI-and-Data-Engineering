@@ -1,11 +1,15 @@
 import math
 from typing import Union
+import re
 
 import geopy.distance
 import pandas as pd
 
 from ai_data_eng.searching.globals import Stop
 
+
+def join_stop_names(s1, s2):
+    return re.sub(r"\W+", "", s1) + '-' + re.sub(r"\W+", "", s2)
 
 def separate_time(time):
     return [int(tp) for tp in time.split(':')]

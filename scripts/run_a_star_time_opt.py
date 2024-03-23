@@ -1,13 +1,11 @@
 import pandas as pd
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.a_star import a_star
+from ai_data_eng.searching.a_star_time_opt import a_star_time_opt
 from ai_data_eng.searching.heuristics import WeightedAverageTimeHeuristic
-from ai_data_eng.searching.searchning import OptimizationType
 
 test_cases = pd.read_json(DATA_DIR / 'test_cases/test_cases.json')
 test_cases = test_cases.values.tolist()
 
-
 for test_case in test_cases:
-    a_star(*test_case, heuristic=WeightedAverageTimeHeuristic(), criterion=OptimizationType.TIME)
+    a_star_time_opt(*test_case, heuristic=WeightedAverageTimeHeuristic())

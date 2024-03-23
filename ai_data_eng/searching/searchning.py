@@ -1,3 +1,4 @@
+import csv
 from enum import Enum
 from typing import Callable
 
@@ -10,12 +11,22 @@ from ai_data_eng.searching.utils import sec_to_time, diff
 pd.options.mode.chained_assignment = None
 from timeit import default_timer as timer
 
+from dataclasses import dataclass, field
+from typing import Any, Callable
+
+
+@dataclass(order=True)
+class PrioritizedItem:
+    priority: int
+    item: Any = field(compare=False)
+
 
 def a_star_print_info(formatter: Callable):
     def func(conn, cost, heuristic, file=None):
         print(
             f"[{formatter(cost)}/{formatter(heuristic)}] {conn.line} goes from {conn.start_stop} to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time}",
             file=file)
+
     return func
 
 
@@ -39,11 +50,22 @@ def idxs_to_nodes(graph: Graph, goal_idx: int, conn_idxs: dict):
     return [graph.conn_at_index(idx) for idx in idx_path[1:]]
 
 
-def print_path(connections: dict, print_to=None):
+def print_path(connections, print_to=None):
     for conn in connections:
         print(
             f'{conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}]',
             file=print_to)
+
+
+def write_solution_to_file(filename, connections, elapsed_time, solution_cost):
+    fields = ["start_stop", "end_stop", "line", "departure_sec", "arrival_sec"]
+    with open(filename, mode='w', encoding='utf-8') as file:
+
+        writer = csv.DictWriter(file, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(connections)
+
+        file.write(f'elapsed_time: {elapsed_time}, solution_cost: {solution_cost}')
 
 
 def assert_connection_path(dept_time, connections):
@@ -77,11 +99,11 @@ def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour
                                             'end_stop_lon'])
     graph = Graph(connection_graph, add_constant_change_time)
 
-    goal_index, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
-                                                      goal_stop=goal_stop, leave_hour=leave_hour,
-                                                      cost_func=get_cost_func(graph, criterion),
-                                                      neighbours_gen=get_neighbours_gen(graph, criterion))
+    goal, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
+                                                goal_stop=goal_stop, leave_hour=leave_hour,
+                                                cost_func=get_cost_func(graph, criterion),
+                                                neighbours_gen=get_neighbours_gen(graph, criterion))
     end = timer()
     elapsed_time = (end - start)
-    solution_cost = costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))]
-    return graph, goal_index, came_from, solution_cost, elapsed_time
+    # solution_cost = costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))]
+    return graph, goal, came_from, costs, elapsed_time

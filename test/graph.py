@@ -7,7 +7,7 @@ import pytest
 from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing
 from ai_data_eng.searching.utils import time_to_normalized_sec
-from ai_data_eng.searching.a_star import MaxVelocityTimeHeuristic
+from ai_data_eng.searching.a_star_time_opt import MaxVelocityTimeHeuristic
 
 @pytest.fixture
 def g():
