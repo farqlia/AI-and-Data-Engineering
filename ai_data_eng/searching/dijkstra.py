@@ -71,3 +71,4 @@ def dijkstra(start_stop: str, goal_stop: str, leave_hour: str):
         write_solution_to_file(DIJKSTRA / 'summary', connections, elapsed_time, solution_cost)
         print(f'Total trip time is {solution_cost}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
+    return graph, connections

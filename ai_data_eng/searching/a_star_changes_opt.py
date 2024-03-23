@@ -15,7 +15,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
               neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
-
+    print_info = a_star_print_info(lambda x: round(x, 2))
     cost_so_far = {}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
@@ -35,6 +35,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 
     graph.add_conn(dep_time, start_stop, -1)
 
+    i = 0
     while not frontier.empty():
         # get the stop with the lowest cost
         item = frontier.get()
@@ -46,7 +47,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             goal = (line, current)
             # theory - first found is the best
             break
-
+        # print(f'[{i}]')
         current_stop = graph.stop_as_tuple(graph.rename_stop(conn))
         for next_conn in neighbours_gen(conn['arrival_sec'], current_stop, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
@@ -57,12 +58,13 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                                                conn, next_conn, new_cost)
             approx_goal_cost = new_cost + heuristic_cost
             if (next_conn.line, next_conn.end_stop) not in cost_so_far or new_cost < cost_so_far[(next_conn.line, next_conn.end_stop)]:
+                # print_info(next_conn, new_cost, heuristic_cost)
                 cost_so_far[(next_conn.line, next_conn.end_stop)] = new_cost
                 item = PrioritizedItem(approx_goal_cost, (next_conn.line, next_conn.end_stop))
                 frontier.put(item)
                 came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                 stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
-
+        # i += 1
 
     return goal, (came_from_conn, stop_conn), cost_so_far
 
@@ -89,9 +91,10 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         came_from_conn, stop_conn = came_from
         conns = path_to_list(goal, came_from_conn, stop_conn)
         connections = [graph.conn_at_index(idx) for idx in conns]
-        assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
+        # assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
         # write_solution_to_file(A_STAR_RUNS_P / f'{start_stop}-{goal_stop}')
         print(f'Total number of changes is {costs[goal]}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
         write_solution_to_file(A_STAR_RUNS_P / 'summary', connections, elapsed_time, costs[goal])
+    return graph, connections

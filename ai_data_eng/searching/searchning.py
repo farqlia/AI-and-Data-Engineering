@@ -62,7 +62,7 @@ def write_solution_to_file(filename, connections, elapsed_time, solution_cost):
     with open(filename, mode='a', encoding='utf-8') as file:
         conn_time = diff(connections[-1]['arrival_sec'], connections[0]['departure_sec'])
         line_changes = np.sum([1 for (c1, c2) in zip(connections[1:], connections[:-1]) if c1['line'] != c2['line']])
-        file.write(f'{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost}\n')
+        file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost}\n')
 
 
 def assert_connection_path(dept_time, connections):

@@ -63,9 +63,9 @@ class ChangeHeuristic(Heuristic):
 
     def __init__(self, alpha=0.01):
         super().__init__(OptimizationType.CHANGES)
-        self.N = 2
+        self.N = 1
         self.alpha = alpha
-        self.mean_time_between_stops = 240
+        self.mean_time_between_stops = 300
 
     def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
                 prev_conn, next_conn, cost: int = None) -> int:
@@ -76,13 +76,13 @@ class ChangeHeuristic(Heuristic):
         heuristic_cost = 0
         time_diff = diff(next_conn.departure_sec, prev_conn.arrival_sec)
         if is_first_stop:
-            heuristic_cost += time_diff / 3600
-        elif is_change:
+            heuristic_cost += time_diff / (3 * 3600)
+        # elif is_change:
             # this should be mean
-            heuristic_cost += time_diff / self.mean_time_between_stops
+            # heuristic_cost += time_diff / self.mean_time_between_stops
         # approximate number of changes
         # self.N = self.alpha * cost + (1 - self.alpha) * self.N
-        heuristic_cost += distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * cost
+        heuristic_cost += distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * max(cost, self.N)
         return heuristic_cost
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
