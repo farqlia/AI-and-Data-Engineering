@@ -134,15 +134,11 @@ class Graph:
                                | (next_conn.start_stop_lon != prev_conn.end_stop_lon))
         is_first_stop = prev_conn.line == ''
         are_lines_different = (not is_first_stop) & (prev_conn.line != next_conn.line)
-        is_changing = not is_first_stop and (are_lines_different or are_stops_different)
-        cost = 1 if is_changing else 0
+        is_change = not is_first_stop and (are_lines_different or are_stops_different)
+        cost = 1 if is_change else 0
         time_diff = diff(next_conn.departure_sec, prev_conn.arrival_sec)
-        if is_first_stop:
-            cost += time_diff / 3600
-        elif is_changing:
-            cost += time_diff / self.approx_time_between_stops
-        elif prev_conn.line == next_conn.line and not are_stops_different:
-            cost += bool(time_diff > self.approx_time_between_stops)
+        if prev_conn.line == next_conn.line and not are_stops_different:
+            cost += (1 if time_diff > self.approx_time_between_stops else 0)
         return cost
 
     def conn_at_index(self, index: int) -> pd.Series:

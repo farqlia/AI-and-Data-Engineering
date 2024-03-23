@@ -7,6 +7,15 @@ from ai_data_eng.searching.graph import *
 from ai_data_eng.searching.searchning import a_star_print_info
 from ai_data_eng.searching.utils import *
 
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(order=True)
+class PrioritizedItem:
+    priority: int
+    item: Any = field(compare=False)
+
 
 def changing_heuristic(start_stop: Stop, stop_to: Stop, stop_goal: Stop, N: int = 2):
     return distance_m(stop_to, stop_goal) / distance_m(start_stop, stop_goal) * N
@@ -29,7 +38,8 @@ def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: st
     cost_so_far[('', start_stop)] = 0
     stop_conn[('', start_stop)] = -1
     came_from_conn[('', start_stop)] = None
-    frontier.put((cost_so_far[('', start_stop)], ('', start_stop)))
+    item = PrioritizedItem(cost_so_far[('', start_stop)], ('', start_stop))
+    frontier.put(item)
 
     start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
 
@@ -41,7 +51,8 @@ def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: st
         i = 0
         while not frontier.empty():
             # get the stop with the lowest cost
-            cost, (line, current) = frontier.get()
+            item = frontier.get()
+            (line, current) = item.item
 
             conn = graph.conn_at_index(stop_conn[(line, current)])
             # consider all possible end stops
@@ -50,20 +61,22 @@ def find_path(graph: Graph, heuristic: Heuristic, start_stop: str, goal_stop: st
                 # theory - first found is the best
                 break
 
-            print(f'[{i}]')
+            #print(f'[{i}]')
 
             current_stop = graph.stop_as_tuple(graph.rename_stop(conn))
             for next_conn in graph.get_lines_from(conn['arrival_sec'], current_stop, conn['line']).itertuples():
                 # cost of commuting start --> current and current --> next
                 next_stop_coords = graph.compute_stop_coords(next_conn.end_stop)
                 next_stop = (next_conn.end_stop, next_stop_coords.stop_lat, next_stop_coords.stop_lon)
-                new_cost = cost + graph.change_cost_between_conns(conn, next_conn)
-                heuristic_cost = heuristic.compute(start_stop, current_stop, next_stop, goal_stop, conn, next_conn)
+                new_cost = cost_so_far[(line, current)] + graph.change_cost_between_conns(conn, next_conn)
+                heuristic_cost = heuristic.compute(start_stop, current_stop, next_stop, goal_stop,
+                                                   conn, next_conn, new_cost)
                 approx_goal_cost = new_cost + heuristic_cost
                 if (next_conn.line, next_conn.end_stop) not in cost_so_far or new_cost < cost_so_far[(next_conn.line, next_conn.end_stop)]:
-                    print_info(next_conn, new_cost, heuristic_cost)
+                    #print_info(next_conn, new_cost, heuristic_cost)
                     cost_so_far[(next_conn.line, next_conn.end_stop)] = new_cost
-                    frontier.put((approx_goal_cost, (next_conn.line, next_conn.end_stop)))
+                    item = PrioritizedItem(approx_goal_cost, (next_conn.line, next_conn.end_stop))
+                    frontier.put(item)
                     came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                     stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
             i += 1

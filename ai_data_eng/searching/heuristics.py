@@ -14,7 +14,7 @@ class Heuristic(ABC):
 
     @abstractmethod
     def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
-                prev_conn: pd.Series, next_conn: pd.Series) -> int:
+                prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
         return -1
 
     @abstractmethod
@@ -28,7 +28,7 @@ class MaxVelocityTimeHeuristic(Heuristic):
         self.max_vel = 1
 
     def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
-                prev_conn: pd.Series, next_conn: pd.Series) -> int:
+                prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
         if next_conn.arrival_sec > next_conn.departure_sec:
             self.max_vel = max(self.max_vel,
                                distance_m(stop_from, stop_to) / diff(next_conn.arrival_sec, next_conn.departure_sec))
@@ -46,7 +46,7 @@ class WeightedAverageTimeHeuristic(Heuristic):
         self.velocity = velocity
 
     def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
-                prev_conn: pd.Series, next_conn: pd.Series) -> int:
+                prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
         dist_from_prev = distance_m(stop_from, stop_to)
         # not sure which times to take here
         time_from_prev = diff(next_conn.arrival_sec, next_conn.departure_sec)
@@ -61,13 +61,29 @@ class WeightedAverageTimeHeuristic(Heuristic):
 
 class ChangeHeuristic(Heuristic):
 
-    def __init__(self):
+    def __init__(self, alpha=0.01):
         super().__init__(OptimizationType.CHANGES)
         self.N = 2
+        self.alpha = alpha
+        self.mean_time_between_stops = 240
 
     def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
-                prev_conn, next_conn) -> int:
-        return distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * self.N
+                prev_conn, next_conn, cost: int = None) -> int:
+        are_stops_different = stop_from != stop_to
+        is_first_stop = prev_conn.line == ''
+        are_lines_different = (not is_first_stop) & (prev_conn.line != next_conn.line)
+        is_change = not is_first_stop and (are_lines_different or are_stops_different)
+        heuristic_cost = 0
+        time_diff = diff(next_conn.departure_sec, prev_conn.arrival_sec)
+        if is_first_stop:
+            heuristic_cost += time_diff / 3600
+        elif is_change:
+            # this should be mean
+            heuristic_cost += time_diff / self.mean_time_between_stops
+        # approximate number of changes
+        # self.N = self.alpha * cost + (1 - self.alpha) * self.N
+        heuristic_cost += distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * cost
+        return heuristic_cost
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
         pass
