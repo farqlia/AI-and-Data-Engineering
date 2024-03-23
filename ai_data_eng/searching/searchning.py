@@ -1,24 +1,22 @@
 from enum import Enum
+from typing import Callable
 
 import pandas as pd
 
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
 from ai_data_eng.searching.utils import sec_to_time, diff
-from ai_data_eng.searching.globals import DATA_DIR
+from ai_data_eng.searching.globals import DATA_DIR, DEBUG
 
 pd.options.mode.chained_assignment = None
 from timeit import default_timer as timer
 
 
-def a_star_p_print_info(prev, next, line, changes, heuristic, file=None):
-    print(
-        f"[{changes}/{heuristic}] {line} goes from {prev} to {next}", file=file)
-
-
-def a_star_print_info(conn, cost, heuristic, file=None):
-    print(
-        f"[{sec_to_time(cost)}/{sec_to_time(heuristic)}] {conn.line} goes from {conn.start_stop} to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time}",
-        file=file)
+def a_star_print_info(formatter: Callable):
+    def func(conn, cost, heuristic, file=None):
+        print(
+            f"[{formatter(cost)}/{formatter(heuristic)}] {conn.line} goes from {conn.start_stop} to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time}",
+            file=file)
+    return func
 
 
 def print_info(conn, cost, file=None):

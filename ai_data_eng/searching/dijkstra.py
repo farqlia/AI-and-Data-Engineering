@@ -49,7 +49,7 @@ def find_path(graph: Graph, cost_func: Callable, start_stop: str, goal_stop: str
 
         for next_conn in graph.get_earliest_from(dep_time + cost, current, conn['line']).itertuples():
             # cost of commuting start --> current and current --> next
-            new_cost = cost + cost_func(next_conn.Index, conn.name)
+            new_cost = cost + cost_func(next_conn, conn)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
             if next_stop_id not in cost_so_far or new_cost < cost_so_far[next_stop_id]:
                 cost_so_far[next_stop_id] = new_cost

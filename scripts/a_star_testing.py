@@ -9,5 +9,8 @@ test_cases = test_cases.values.tolist()
 
 # a_star(*test_cases[0], heuristic=WeightedAverageTimeHeuristic(), criterion=OptimizationType.TIME)
 
-for test_case in test_cases:
-    a_star(*test_case, heuristic=ChangeHeuristic(), criterion=OptimizationType.CHANGES)
+test_case = {
+    "start_stop": "most Grunwaldzki", "goal_stop": "Rynek", "leave_hour": "08:00:00"
+}
+
+a_star(**test_case, heuristic=ChangeHeuristic(), criterion=OptimizationType.CHANGES)
