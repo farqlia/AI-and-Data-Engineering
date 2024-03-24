@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 from ai_data_eng.searching.graph import Stop
-from ai_data_eng.searching.searchning import OptimizationType
+from ai_data_eng.searching.searchning import OptimizationType, TIME_AND_CHANGE_HEURISTIC
 from ai_data_eng.searching.utils import distance_m, diff
 
 
@@ -56,8 +56,23 @@ class WeightedAverageTimeHeuristic(Heuristic):
         return heuristic_time
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
-        return (distance_m(goal_stop, start_stop) / self.velocity) <= actual_time
+        pass
 
+class TimeAndChangeHeuristic(Heuristic):
+
+    def __init__(self):
+        super().__init__(OptimizationType.TIME_AND_CHANGES)
+        self.a = TIME_AND_CHANGE_HEURISTIC['a']
+        self.b = TIME_AND_CHANGE_HEURISTIC['b']
+        self.time_heurists = WeightedAverageTimeHeuristic()
+        self.change_heuristic = ChangeHeuristic()
+
+    def compute(self, start_stop: Stop, stop_from: Stop, stop_to: Stop, goal_stop: Stop,
+                prev_conn, next_conn, cost: int = None) -> int:
+        return self.a * self.time_heurists.compute(start_stop, stop_from, stop_to, goal_stop, prev_conn, next_conn, cost) + self.b * self.change_heuristic.compute(start_stop, stop_from, stop_to, goal_stop, prev_conn, next_conn, cost)
+
+    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
+        return (distance_m(goal_stop, start_stop) / self.velocity) <= actual_time
 
 class ChangeHeuristic(Heuristic):
 

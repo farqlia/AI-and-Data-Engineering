@@ -14,5 +14,5 @@ if os.path.exists(DIJKSTRA):
     os.makedirs(DIJKSTRA)
 
 for test_case in test_cases:
-    dijkstra(*test_case, change_time=0)
+    dijkstra(*test_case, change_time=60)
 

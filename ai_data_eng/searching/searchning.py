@@ -16,6 +16,9 @@ from timeit import default_timer as timer
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+TIME_AND_CHANGE_HEURISTIC = {
+    'a': 0.001, 'b': 1
+}
 
 @dataclass(order=True)
 class PrioritizedItem:
@@ -77,11 +80,19 @@ def assert_connection_path(dept_time, connections):
 
 class OptimizationType(Enum):
     TIME = 1,
-    CHANGES = 2
+    CHANGES = 2,
+    TIME_AND_CHANGES = 3
 
 
 def get_cost_func(graph: Graph, criterion: OptimizationType):
-    return graph.time_cost_between_conns if criterion == OptimizationType.TIME else graph.change_cost_between_conns
+    if criterion == OptimizationType.TIME:
+        return graph.time_cost_between_conns
+    elif criterion == OptimizationType.CHANGES:
+        return graph.change_cost_between_conns
+    else:
+        graph.a = TIME_AND_CHANGE_HEURISTIC['a']
+        graph.b = TIME_AND_CHANGE_HEURISTIC['b']
+        return graph.averaged_cost
 
 
 def get_neighbours_gen(graph: Graph, criterion: OptimizationType):

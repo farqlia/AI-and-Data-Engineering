@@ -78,7 +78,7 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal_index, came_from, costs, elapsed_time = run_solution(
             partial(find_path, heuristic=heuristic, initialization_func=initialization_func),
-            start_stop, goal_stop, leave_hour, change_time, OptimizationType.TIME)
+            start_stop, goal_stop, leave_hour, change_time, heuristic.criterion)
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)

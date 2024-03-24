@@ -51,7 +51,7 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
 
         for next_conn in neighbours_gen(dep_time + cost, current, conn['line'], closest_set).itertuples():
             # cost of commuting start --> current and current --> next
-            new_cost = cost + cost_func(next_conn, conn)
+            new_cost = cost + cost_func(next_conn=next_conn, prev_conn=conn)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
             if next_stop_id not in cost_so_far or new_cost < cost_so_far[next_stop_id]:
                 cost_so_far[next_stop_id] = new_cost

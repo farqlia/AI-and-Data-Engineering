@@ -30,7 +30,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     came_from_conn[('', start_stop)] = None
     item = PrioritizedItem(cost_so_far[('', start_stop)], ('', start_stop))
     frontier.put(item)
-    closest_set = {start_stop}
+    closest_set = {('', start_stop)}
 
     start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
 
@@ -66,7 +66,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                 stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
         # i += 1
-        closest_set.add(current)
+        closest_set.add((line, current))
 
     return goal, (came_from_conn, stop_conn), cost_so_far
 
@@ -84,12 +84,12 @@ def path_to_list(goal, came_from_conn, stop_conn):
 
 
 def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
-                       heuristic: Heuristic, change_time=0):
-    with open(A_STAR_RUNS_P / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
+                       heuristic: Heuristic, change_time=0, run_dir=A_STAR_RUNS_P):
+    with open(run_dir / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal, came_from, costs, elapsed_time = run_solution(
             partial(find_path, heuristic=heuristic),
-            start_stop, goal_stop, leave_hour, change_time, OptimizationType.CHANGES)
+            start_stop, goal_stop, leave_hour, change_time, criterion=heuristic.criterion)
         came_from_conn, stop_conn = came_from
         conns = path_to_list(goal, came_from_conn, stop_conn)
         connections = [graph.conn_at_index(idx) for idx in conns]
@@ -98,5 +98,5 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         # write_solution_to_file(A_STAR_RUNS_P / f'{start_stop}-{goal_stop}')
         print(f'Total number of changes is {costs[goal]}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
-        write_solution_to_file(A_STAR_RUNS_P / 'summary', connections, leave_hour, elapsed_time, costs[goal], change_time)
+        write_solution_to_file(run_dir / 'summary', connections, leave_hour, elapsed_time, costs[goal], change_time)
     return graph, connections

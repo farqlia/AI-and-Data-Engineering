@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import Stop
-from ai_data_eng.searching.utils import time_to_normalized_sec, diff
+from ai_data_eng.searching.utils import time_to_normalized_sec, diff, distance_m
 
 pd.options.mode.chained_assignment = None
 
@@ -18,6 +18,7 @@ class Graph:
         self.conn_graph = conn_graph
         self.change_time_compute = add_change_time
         self.stops = None
+        self.a, self.b = 1, 1
         self.transform()
 
     def transform(self):
@@ -110,7 +111,11 @@ class Graph:
     def end_stop_not_in(self, exclude_stops: Set[str]):
         return ~self.conn_graph['end_stop'].isin(exclude_stops)
 
-    def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set[str] = None):
+    def end_stop_and_line_not_in(self, exclude_stops_and_lines: Set[str]):
+        lines, stops = list(zip(*exclude_stops_and_lines))
+        return ~self.conn_graph['end_stop'].isin(stops) & ~self.conn_graph['line'].isin(lines)
+
+    def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set = None):
         '''Returns all earliest connections to all neighbouring stops'''
         possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()
                                          & self.end_stop_not_in(exclude_stops)]
@@ -129,7 +134,7 @@ class Graph:
 
         return first_conns
 
-    def time_cost_between_conns(self, next_conn: pd.Series, prev_conn: pd.Series) -> int:
+    def time_cost_between_conns(self, prev_conn: pd.Series, next_conn: pd.Series) -> int:
         cost = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
         return cost
 
@@ -145,6 +150,14 @@ class Graph:
         if prev_conn.line == next_conn.line and not are_stops_different:
             cost += (1 if time_diff > self.approx_time_between_stops else 0)
         return cost
+
+    def distance_cost(self, prev_conn: pd.Series, next_conn: pd.Series):
+        return distance_m(self.stop_as_tuple(self.rename_stop(prev_conn)),
+                          self.stop_as_tuple(self.rename_stop(next_conn)))
+
+    def averaged_cost(self, prev_conn: pd.Series, next_conn: pd.Series):
+        return (self.a * self.time_cost_between_conns(prev_conn, next_conn) +
+                self.b * self.change_cost_between_conns(prev_conn, next_conn))
 
     def conn_at_index(self, index: int) -> pd.Series:
         return self.conn_graph.loc[index]

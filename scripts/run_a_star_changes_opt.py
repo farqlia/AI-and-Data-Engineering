@@ -10,7 +10,7 @@ test_cases = pd.read_json(DATA_DIR / 'test_cases/test_cases.json')
 test_cases = test_cases.values.tolist()
 
 if os.path.exists(A_STAR_RUNS_P):
-    shutil.rmtree(A_STAR_RUNS_P)
+    #shutil.rmtree(A_STAR_RUNS_P)
     os.makedirs(A_STAR_RUNS_P)
 
 for test_case in test_cases:
