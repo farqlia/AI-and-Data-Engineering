@@ -112,7 +112,7 @@ class Graph:
 
         time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
         time_dep_diff = diff(possible_conns['departure_sec'],
-                             self.change_time_compute(possible_conns, start_stop, dep_time, line))
+                             self.change_time_compute(conns=possible_conns, stop=start_stop, dep_time=dep_time, line=line))
 
         differences = (time_arrv_diff - time_dep_diff) >= 0
         valid_time_arrv_diff = time_arrv_diff[differences].sort_values()

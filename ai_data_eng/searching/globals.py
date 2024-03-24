@@ -5,10 +5,13 @@ from typing import Tuple
 
 Stop = Tuple[str, float, float]
 
-DEBUG = True
+DEBUG = False
 
 DATA_DIR = Path('../data')
-RESULTS = DATA_DIR / 'results'
+if DEBUG:
+    RESULTS = DATA_DIR / 'debug'
+else:
+    RESULTS = DATA_DIR / 'results'
 os.makedirs(RESULTS, exist_ok=True)
 DIJKSTRA = RESULTS / "dijkstra"
 os.makedirs(DIJKSTRA, exist_ok=True)

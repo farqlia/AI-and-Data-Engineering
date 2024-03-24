@@ -1,5 +1,6 @@
 import csv
 from enum import Enum
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -7,7 +8,7 @@ import pandas as pd
 
 from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
-from ai_data_eng.searching.utils import sec_to_time, diff
+from ai_data_eng.searching.utils import sec_to_time, diff, time_to_normalized_sec
 
 pd.options.mode.chained_assignment = None
 from timeit import default_timer as timer
@@ -58,11 +59,11 @@ def print_path(connections, print_to=None):
             file=print_to)
 
 
-def write_solution_to_file(filename, connections, elapsed_time, solution_cost):
-    with open(filename, mode='a', encoding='utf-8') as file:
-        conn_time = diff(connections[-1]['arrival_sec'], connections[0]['departure_sec'])
+def write_solution_to_file(filename, connections, leave_hour, elapsed_time, solution_cost, change_time):
+    with open(str(filename) + f'{change_time}', mode='a', encoding='utf-8') as file:
+        conn_time = diff(connections[-1]['arrival_sec'], time_to_normalized_sec(leave_hour))
         line_changes = np.sum([1 for (c1, c2) in zip(connections[1:], connections[:-1]) if c1['line'] != c2['line']])
-        file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost}\n')
+        file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost},{change_time}\n')
 
 
 def assert_connection_path(dept_time, connections):
@@ -87,14 +88,14 @@ def get_neighbours_gen(graph: Graph, criterion: OptimizationType):
     return graph.get_earliest_from if criterion == OptimizationType.TIME else graph.get_lines_from
 
 
-def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str,
+def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str, change_time,
                  criterion: OptimizationType = OptimizationType.TIME):
     start = timer()
     connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
                                    usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
                                             'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
                                             'end_stop_lon'])
-    graph = Graph(connection_graph, add_constant_change_time)
+    graph = Graph(connection_graph, partial(add_constant_change_time, change_time=change_time))
 
     goal, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
                                                 goal_stop=goal_stop, leave_hour=leave_hour,

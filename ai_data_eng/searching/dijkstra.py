@@ -58,17 +58,17 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
     return goal_stop_index, came_from_conn, cost_so_far
 
 
-def dijkstra(start_stop: str, goal_stop: str, leave_hour: str):
-    with open(DIJKSTRA / 'run', mode='a', encoding='utf-8') as f:
+def dijkstra(start_stop: str, goal_stop: str, leave_hour: str, change_time: int):
+    with open(DIJKSTRA / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal_index, came_from, costs, elapsed_time = run_solution(find_path, start_stop, goal_stop,
-                                                                                 leave_hour, OptimizationType.TIME)
+                                                                    leave_hour, change_time, OptimizationType.TIME)
 
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
         solution_cost = sec_to_time(costs[graph.stop_as_tuple(graph.rename_stop(graph.conn_at_index(goal_index)))])
-        write_solution_to_file(DIJKSTRA / 'summary', connections, elapsed_time, solution_cost)
+        write_solution_to_file(DIJKSTRA / 'summary', connections, leave_hour, elapsed_time, solution_cost, change_time)
         print(f'Total trip time is {solution_cost}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
     return graph, connections

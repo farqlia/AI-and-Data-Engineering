@@ -23,7 +23,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     goal_stop_coords = graph.compute_stop_coords(goal_stop)
     goal_stop = (goal_stop, goal_stop_coords['stop_lat'], goal_stop_coords['stop_lon'])
     start_stop_coords = graph.compute_stop_coords(start_stop)
-    print(f'{start_stop} -> {goal_stop}')
+    # print(f'{start_stop} -> {goal_stop}')
 
     cost_so_far[('', start_stop)] = 0
     stop_conn[('', start_stop)] = -1
@@ -82,12 +82,12 @@ def path_to_list(goal, came_from_conn, stop_conn):
 
 
 def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
-                       heuristic: Heuristic):
-    with open(A_STAR_RUNS_P / 'run', mode='a', encoding='utf-8') as f:
+                       heuristic: Heuristic, change_time=0):
+    with open(A_STAR_RUNS_P / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal, came_from, costs, elapsed_time = run_solution(
             partial(find_path, heuristic=heuristic),
-            start_stop, goal_stop, leave_hour, OptimizationType.CHANGES)
+            start_stop, goal_stop, leave_hour, change_time, OptimizationType.CHANGES)
         came_from_conn, stop_conn = came_from
         conns = path_to_list(goal, came_from_conn, stop_conn)
         connections = [graph.conn_at_index(idx) for idx in conns]
@@ -96,5 +96,5 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         # write_solution_to_file(A_STAR_RUNS_P / f'{start_stop}-{goal_stop}')
         print(f'Total number of changes is {costs[goal]}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
-        write_solution_to_file(A_STAR_RUNS_P / 'summary', connections, elapsed_time, costs[goal])
+        write_solution_to_file(A_STAR_RUNS_P / 'summary', connections, leave_hour, elapsed_time, costs[goal], change_time)
     return graph, connections
