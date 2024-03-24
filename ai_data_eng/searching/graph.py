@@ -155,6 +155,12 @@ def is_changing(conns, stop: Stop, line: str) -> pd.DataFrame:
     return (conns.start_stop_lat != stop[1]) | (conns.start_stop_lon != stop[2]) | (conns.line != line)
 
 
+def is_conn_change(prev_conn, next_conn):
+    return ((prev_conn.end_stop != next_conn.start_stop) | (prev_conn.end_stop_lat != next_conn.start_stop_lat) |
+            (prev_conn.end_stop_lon != next_conn.start_stop_lon) |
+            (prev_conn.line != next_conn.line) | (diff(next_conn.departure_sec, prev_conn.arrival_sec) > 240.0))
+
+
 def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str = None, change_time=60):
     dept_times = pd.Series(data=dep_time, index=conns.index)
     if line != '':

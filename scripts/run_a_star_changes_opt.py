@@ -14,4 +14,5 @@ if os.path.exists(A_STAR_RUNS_P):
     os.makedirs(A_STAR_RUNS_P)
 
 for test_case in test_cases:
+    print(f'Running {test_case}')
     a_star_changes_opt(*test_case, change_time=0, heuristic=ChangeHeuristic())

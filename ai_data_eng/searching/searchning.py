@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time
+from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, is_conn_change
 from ai_data_eng.searching.utils import sec_to_time, diff, time_to_normalized_sec
 
 pd.options.mode.chained_assignment = None
@@ -62,7 +62,7 @@ def print_path(connections, print_to=None):
 def write_solution_to_file(filename, connections, leave_hour, elapsed_time, solution_cost, change_time):
     with open(str(filename) + f'{change_time}', mode='a', encoding='utf-8') as file:
         conn_time = diff(connections[-1]['arrival_sec'], time_to_normalized_sec(leave_hour))
-        line_changes = np.sum([1 for (c1, c2) in zip(connections[1:], connections[:-1]) if c1['line'] != c2['line']])
+        line_changes = int(np.sum([1 for (c1, c2) in zip(connections[:-1], connections[1:]) if is_conn_change(c1, c2)]))
         file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost},{change_time}\n')
 
 

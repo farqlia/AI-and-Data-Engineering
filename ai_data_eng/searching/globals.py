@@ -5,7 +5,7 @@ from typing import Tuple
 
 Stop = Tuple[str, float, float]
 
-DEBUG = False
+DEBUG = True
 
 DATA_DIR = Path('../data')
 if DEBUG:
@@ -17,5 +17,5 @@ DIJKSTRA = RESULTS / "dijkstra"
 os.makedirs(DIJKSTRA, exist_ok=True)
 A_STAR_RUNS_T = RESULTS / 'a-star-t'
 os.makedirs(A_STAR_RUNS_T, exist_ok=True)
-A_STAR_RUNS_P = RESULTS / 'a-star-p'
+A_STAR_RUNS_P = RESULTS / 'a-star-p-2'
 os.makedirs(A_STAR_RUNS_P, exist_ok=True)
