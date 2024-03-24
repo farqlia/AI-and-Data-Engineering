@@ -30,6 +30,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     came_from_conn[('', start_stop)] = None
     item = PrioritizedItem(cost_so_far[('', start_stop)], ('', start_stop))
     frontier.put(item)
+    closest_set = {start_stop}
 
     start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
 
@@ -49,7 +50,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             break
         # print(f'[{i}]')
         current_stop = graph.stop_as_tuple(graph.rename_stop(conn))
-        for next_conn in neighbours_gen(conn['arrival_sec'], current_stop, conn['line']).itertuples():
+        for next_conn in neighbours_gen(conn['arrival_sec'], current_stop, conn['line'], closest_set).itertuples():
             # cost of commuting start --> current and current --> next
             next_stop_coords = graph.compute_stop_coords(next_conn.end_stop)
             next_stop = (next_conn.end_stop, next_stop_coords.stop_lat, next_stop_coords.stop_lon)
@@ -65,6 +66,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                 stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
         # i += 1
+        closest_set.add(current)
 
     return goal, (came_from_conn, stop_conn), cost_so_far
 

@@ -22,6 +22,8 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
     came_from_conn = {}
     stop_conn = {}
 
+    closest_set = {start_stop}
+
     # given only stop name consider all possible start stops??  
     j = -1
     for candidate_start_stop in graph.get_possible_stops_t(start_stop):
@@ -29,7 +31,9 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
         graph.add_conn(dep_time, candidate_start_stop, j)
         came_from_conn[j] = None
         stop_conn[candidate_start_stop] = j
-        frontier.put(PrioritizedItem(cost_so_far[candidate_start_stop], candidate_start_stop))
+        item = PrioritizedItem(cost_so_far[candidate_start_stop], candidate_start_stop)
+        frontier.put(item)
+
         j -= 1
 
     while not frontier.empty():
@@ -45,7 +49,7 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
             # theory - first found is the best
             break
 
-        for next_conn in neighbours_gen(dep_time + cost, current, conn['line']).itertuples():
+        for next_conn in neighbours_gen(dep_time + cost, current, conn['line'], closest_set).itertuples():
             # cost of commuting start --> current and current --> next
             new_cost = cost + cost_func(next_conn, conn)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
@@ -54,6 +58,7 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
                 frontier.put(PrioritizedItem(new_cost, next_stop_id))
                 came_from_conn[next_conn.Index] = conn.name
                 stop_conn[next_stop_id] = next_conn.Index
+        closest_set.add(current[0])
 
     return goal_stop_index, came_from_conn, cost_so_far
 

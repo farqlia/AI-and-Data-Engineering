@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 import numpy as np
 import pandas as pd
@@ -88,9 +88,10 @@ class Graph:
         n_df = self.get_neighbour_stops(stop)
         return [self.stop_as_tuple(s) for (i, s) in n_df.iterrows()]
 
-    def get_lines_from(self, dep_time: int, start_stop: Stop, line: str = None):
+    def get_lines_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set[str] = None):
         possible_conns = self.conn_graph[
-            (self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()]
+            (self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()
+            & self.end_stop_not_in(exclude_stops)]
 
         time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
         time_dep_diff = diff(possible_conns['departure_sec'],
@@ -106,9 +107,13 @@ class Graph:
 
         return first_conns
 
-    def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None):
+    def end_stop_not_in(self, exclude_stops: Set[str]):
+        return ~self.conn_graph['end_stop'].isin(exclude_stops)
+
+    def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set[str] = None):
         '''Returns all earliest connections to all neighbouring stops'''
-        possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()]
+        possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()
+                                         & self.end_stop_not_in(exclude_stops)]
 
         time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
         time_dep_diff = diff(possible_conns['departure_sec'],

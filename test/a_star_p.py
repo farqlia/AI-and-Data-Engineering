@@ -13,7 +13,7 @@ from ai_data_eng.searching.searchning import *
 test_cases = pd.read_json(DATA_DIR / 'test_cases/test_cases.json')
 test_cases = test_cases.values.tolist()
 
-start_stop, goal_stop, leave_hour = test_cases[4]
+start_stop, goal_stop, leave_hour = test_cases[1]
 print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute')
 start = timer()
 connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
