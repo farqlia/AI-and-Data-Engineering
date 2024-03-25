@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 TIME_AND_CHANGE_HEURISTIC = {
-    'a': 0.001, 'b': 1
+    'a': 0.1, 'b': 0.5
 }
 
 @dataclass(order=True)
@@ -37,7 +37,8 @@ def a_star_print_info(formatter: Callable):
 
 def print_info(conn, cost, file=None):
     print(
-        f"[{sec_to_time(cost)}] {conn['line']} goes from {conn['start_stop']} to {conn['end_stop']} and leaves at {conn['departure_time']}, arrives at {conn['arrival_time']}",
+        f"[{sec_to_time(cost)}] {conn.line} goes from {conn.start_stop}"
+        f" to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time}",
         file=file)
 
 

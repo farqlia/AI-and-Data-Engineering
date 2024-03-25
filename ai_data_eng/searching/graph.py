@@ -122,7 +122,8 @@ class Graph:
 
         time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
         time_dep_diff = diff(possible_conns['departure_sec'],
-                             self.change_time_compute(conns=possible_conns, stop=start_stop, dep_time=dep_time, line=line))
+                             self.change_time_compute(conns=possible_conns, stop=start_stop,
+                                                      dep_time=dep_time, line=line))
 
         differences = (time_arrv_diff - time_dep_diff) >= 0
         valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
@@ -164,8 +165,10 @@ class Graph:
 
 
 # Problems: changing is badly implemented, also is
-def is_changing(conns, stop: Stop, line: str) -> pd.DataFrame:
-    return (conns.start_stop_lat != stop[1]) | (conns.start_stop_lon != stop[2]) | (conns.line != line)
+def is_changing(conns, stop: Stop, line: str, dep_time: int) -> pd.DataFrame:
+    return ((conns.start_stop_lat != stop[1])
+            | (conns.start_stop_lon != stop[2])
+            | (conns.line != line) | (diff(conns.departure_sec, dep_time) > 240.0))
 
 
 def is_conn_change(prev_conn, next_conn):
@@ -177,6 +180,6 @@ def is_conn_change(prev_conn, next_conn):
 def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str = None, change_time=60):
     dept_times = pd.Series(data=dep_time, index=conns.index)
     if line != '':
-        is_change = is_changing(conns, stop, line)
+        is_change = is_changing(conns, stop, line, dep_time)
         dept_times.loc[is_change] = (dept_times.loc[is_change] + change_time) % (24 * 3600)
     return dept_times

@@ -32,7 +32,7 @@ def initialize_with_prev_conn(prev_conn_idx: int, graph: Graph, cost_func: Calla
     prev_conn = graph.conn_at_index(prev_conn_idx)
     prev_stop = graph.stop_as_tuple(graph.rename_stop(prev_conn))
     for i in came_from_conn:
-        graph.conn_graph.loc[i].line = 'MISSING'
+        graph.conn_graph.loc[i, 'line'] = 'MISSING'
     k = stop_conn[prev_stop]
     graph.conn_graph.drop(k, inplace=True)
     stop_conn[prev_stop] = prev_conn_idx

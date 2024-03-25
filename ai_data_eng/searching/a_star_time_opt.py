@@ -87,3 +87,11 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
         write_solution_to_file(A_STAR_RUNS_T / 'summary', connections, leave_hour, elapsed_time, solution_cost, change_time)
     return graph, connections
+
+def a_star_time_opt_light(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, change_time,
+                    initialization_func=initialize_queue):
+    graph, goal_index, came_from, costs, elapsed_time = run_solution(
+            partial(find_path, heuristic=heuristic, initialization_func=initialization_func),
+            start_stop, goal_stop, leave_hour, change_time, heuristic.criterion)
+    connections = idxs_to_nodes(graph, goal_index, came_from)
+    return graph, connections

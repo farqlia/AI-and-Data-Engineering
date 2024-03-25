@@ -100,3 +100,14 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
         write_solution_to_file(run_dir / 'summary', connections, leave_hour, elapsed_time, costs[goal], change_time)
     return graph, connections
+
+
+def a_star_changes_opt_light(start_stop: str, goal_stop: str, leave_hour: str,
+                       heuristic: Heuristic, change_time=0):
+    graph, goal, came_from, costs, elapsed_time = run_solution(
+        partial(find_path, heuristic=heuristic),
+        start_stop, goal_stop, leave_hour, change_time, criterion=heuristic.criterion)
+    came_from_conn, stop_conn = came_from
+    conns = path_to_list(goal, came_from_conn, stop_conn)
+    connections = [graph.conn_at_index(idx) for idx in conns]
+    return graph, connections
