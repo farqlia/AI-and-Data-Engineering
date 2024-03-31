@@ -49,7 +49,7 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
             # theory - first found is the best
             break
 
-        for next_conn in neighbours_gen(dep_time + cost, current, conn['line'], closest_set).itertuples():
+        for next_conn in neighbours_gen(conn).itertuples():
             # cost of commuting start --> current and current --> next
             new_cost = cost + cost_func(next_conn=next_conn, prev_conn=conn)
             next_stop_id = (next_conn.end_stop, next_conn.end_stop_lat, next_conn.end_stop_lon)
@@ -59,6 +59,7 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
                 came_from_conn[next_conn.Index] = conn.name
                 stop_conn[next_stop_id] = next_conn.Index
         closest_set.add(current[0])
+        graph.exclude_stop(current[0])
 
     return goal_stop_index, came_from_conn, cost_so_far
 

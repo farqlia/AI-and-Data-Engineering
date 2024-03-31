@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import Stop
-from ai_data_eng.searching.utils import time_to_normalized_sec, diff, distance_m
+from ai_data_eng.searching.utils import time_to_normalized_sec, diff, distance_m, stop_as_tuple
 
 pd.options.mode.chained_assignment = None
 
 END_STOP_COLS = ['end_stop', 'end_stop_lat', 'end_stop_lon']
 START_STOP_COLS = ['start_stop', 'start_stop_lat', 'start_stop_lon']
-
+UPPER_BOUND_CONN_TIME = 240.0
 
 class Graph:
 
@@ -27,9 +27,7 @@ class Graph:
         self.conn_graph.loc[:, 'line'] = self.conn_graph.loc[:, 'line'].astype(str)
         self.conn_graph.loc[:, 'departure_sec'] = self.conn_graph['departure_time'].apply(time_to_normalized_sec)
         self.conn_graph.loc[:, 'arrival_sec'] = self.conn_graph['arrival_time'].apply(time_to_normalized_sec)
-        time_diffs = diff(self.conn_graph['arrival_sec'], self.conn_graph['departure_sec'])
-        self.approx_time_between_stops = np.percentile(time_diffs, 99)
-        self.max_time_between_stops = np.percentile(time_diffs, 99.995)
+        self.computation_cg = self.conn_graph
 
     def add_conn(self, dep_time: int, stop: Stop, index: int):
         self.conn_graph.loc[index] = pd.Series(
@@ -71,10 +69,10 @@ class Graph:
     def rename_stop(self, stop, prefix='end'):
         if isinstance(stop, pd.DataFrame):
             return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
-                                f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, axis=1)
+                                f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, axis=1, errors='ignore')
         else:
             return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
-                                f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'})
+                                f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, errors='ignore')
 
     def get_neighbour_stops(self, stop: Stop) -> pd.Series:
         '''Returns neighbouring end stops'''
@@ -115,6 +113,9 @@ class Graph:
         lines, stops = list(zip(*exclude_stops_and_lines))
         return ~self.conn_graph['end_stop'].isin(stops) & ~self.conn_graph['line'].isin(lines)
 
+    # TODO: try to change the following things:
+    # 1. Try to first group by and then take minimum by the valid time arrival diff
+    # 2. Try to parametrize line so that connection with and without changing is returned
     def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set = None):
         '''Returns all earliest connections to all neighbouring stops'''
         possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()
@@ -135,6 +136,28 @@ class Graph:
 
         return first_conns
 
+    def get_earliest_from_with_and_without_change(self, prev_conn: pd.Series):
+        possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == prev_conn.end_stop)]
+        time_arrv_diff = diff(possible_conns['arrival_sec'], prev_conn.arrival_sec)
+        time_dep_diff = diff(possible_conns['departure_sec'],
+                             self.change_time_compute(conns=possible_conns, prev_conn=prev_conn))
+
+        differences = (time_arrv_diff - time_dep_diff) >= 0
+        valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
+
+        valid_conns = possible_conns.loc[valid_time_arrv_diff.index]
+        first_conns = valid_conns.drop_duplicates(['start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon',
+                                                   'end_stop_lat', 'end_stop_lon'])
+        if prev_conn.line != '':
+            line_continuation = valid_conns[~is_conn_change(prev_conn, valid_conns)]
+            first_conns = pd.concat([line_continuation, first_conns])
+
+        return first_conns
+
+    def exclude_stop(self, stop: str):
+        self.computation_cg = self.computation_cg.loc[self.computation_cg['end_stop'] != stop]
+
+
     def time_cost_between_conns(self, prev_conn: pd.Series, next_conn: pd.Series) -> int:
         cost = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
         return cost
@@ -149,7 +172,7 @@ class Graph:
         cost = 1 if is_change else 0
         time_diff = diff(next_conn.departure_sec, prev_conn.arrival_sec)
         if prev_conn.line == next_conn.line and not are_stops_different:
-            cost += (1 if time_diff > self.approx_time_between_stops else 0)
+            cost += (1 if time_diff > UPPER_BOUND_CONN_TIME else 0)
         return cost
 
     def distance_cost(self, prev_conn: pd.Series, next_conn: pd.Series):
@@ -168,13 +191,21 @@ class Graph:
 def is_changing(conns, stop: Stop, line: str, dep_time: int) -> pd.DataFrame:
     return ((conns.start_stop_lat != stop[1])
             | (conns.start_stop_lon != stop[2])
-            | (conns.line != line) | (diff(conns.departure_sec, dep_time) > 240.0))
+            | (conns.line != line) | (diff(conns.departure_sec, dep_time) > UPPER_BOUND_CONN_TIME))
 
 
 def is_conn_change(prev_conn, next_conn):
     return ((prev_conn.end_stop != next_conn.start_stop) | (prev_conn.end_stop_lat != next_conn.start_stop_lat) |
             (prev_conn.end_stop_lon != next_conn.start_stop_lon) |
             (prev_conn.line != next_conn.line) | (diff(next_conn.departure_sec, prev_conn.arrival_sec) > 240.0))
+
+
+def add_const_change_time(conns, prev_conn, change_time=60):
+    dept_times = pd.Series(data=prev_conn.arrival_sec, index=conns.index)
+    if prev_conn.line != '':
+        is_change = is_conn_change(prev_conn, conns)
+        dept_times[is_change] = (dept_times[is_change] + change_time) % (24 * 3600)
+    return dept_times
 
 
 def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str = None, change_time=60):

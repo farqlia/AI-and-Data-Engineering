@@ -51,3 +51,16 @@ def approximate_velocity(stop_from: Stop, stop_to: Stop, conn_time: float):
 
 def approximate_velocity_round(stop_from: Stop, stop_to: Stop, conn_time: float):
     return distance_round(stop_from, stop_to) / conn_time
+
+
+def rename_stop(stop, prefix='end'):
+    if isinstance(stop, pd.DataFrame):
+        return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
+                            f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, axis=1, errors='ignore')
+    else:
+        return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
+                            f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, errors='ignore')
+
+def stop_as_tuple(stop, prefix='end'):
+    stop = rename_stop(stop, prefix)
+    return (stop['stop'], stop['stop_lat'], stop['stop_lon'])

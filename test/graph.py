@@ -5,9 +5,9 @@ import pandas as pd
 import pytest
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing
+from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, add_const_change_time, is_conn_change
 from ai_data_eng.searching.utils import time_to_normalized_sec
-from ai_data_eng.searching.a_star_time_opt import MaxVelocityTimeHeuristic
+from ai_data_eng.searching.heuristics import MaxVelocityTimeHeuristic
 
 @pytest.fixture
 def g():
@@ -15,7 +15,7 @@ def g():
                                usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
        'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
        'end_stop_lon'])
-    return Graph(connection_graph, add_constant_change_time)
+    return Graph(connection_graph, add_const_change_time)
 
 
 def test_get_possible_stops(g):
@@ -105,3 +105,10 @@ def test_neigh_lines(g):
     print(g.get_possible_stops_t('PL. GRUNWALDZKI'))
     print(g.get_neighbour_lines('PL. GRUNWALDZKI'))
     print(g.compute_stop_coords('PL. GRUNWALDZKI'))
+
+def test_is_conn_changed(g):
+    subconn = g.conn_graph.loc[14555:14559]
+    print(subconn.loc[~is_conn_change(g.conn_graph.loc[14557], subconn)])
+
+def test_get_earliest_line_cont(g):
+    print(g.get_earliest_from_with_and_without_change(g.conn_graph.loc[14557]))

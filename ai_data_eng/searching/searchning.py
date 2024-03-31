@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, is_conn_change
+from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, is_conn_change, add_const_change_time
 from ai_data_eng.searching.utils import sec_to_time, diff, time_to_normalized_sec
 
 pd.options.mode.chained_assignment = None
@@ -20,6 +20,7 @@ TIME_AND_CHANGE_HEURISTIC = {
     'a': 0.1, 'b': 0.5
 }
 
+
 @dataclass(order=True)
 class PrioritizedItem:
     priority: int
@@ -29,7 +30,7 @@ class PrioritizedItem:
 def a_star_print_info(formatter: Callable):
     def func(conn, cost, heuristic, file=None):
         print(
-            f"[{formatter(cost)}/{formatter(heuristic)}] {conn.line} goes from {conn.start_stop} to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time}",
+            f"[{formatter(cost)}/{formatter(heuristic)}] {conn.line} goes from {conn.start_stop} to {conn.end_stop} and leaves at {conn.departure_time}, arrives at {conn.arrival_time} [{conn.Index}]",
             file=file)
 
     return func
@@ -97,7 +98,7 @@ def get_cost_func(graph: Graph, criterion: OptimizationType):
 
 
 def get_neighbours_gen(graph: Graph, criterion: OptimizationType):
-    return graph.get_earliest_from if criterion == OptimizationType.TIME else graph.get_lines_from
+    return graph.get_earliest_from_with_and_without_change if criterion == OptimizationType.TIME else graph.get_lines_from
 
 
 def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str, change_time,
@@ -107,7 +108,7 @@ def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour
                                    usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
                                             'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
                                             'end_stop_lon'])
-    graph = Graph(connection_graph, partial(add_constant_change_time, change_time=change_time))
+    graph = Graph(connection_graph, partial(add_const_change_time, change_time=change_time))
 
     goal, came_from, costs = find_path_function(graph=graph, start_stop=start_stop,
                                                 goal_stop=goal_stop, leave_hour=leave_hour,
