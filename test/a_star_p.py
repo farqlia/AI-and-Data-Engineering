@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ai_data_eng.searching.a_star_changes_opt import find_path
+from ai_data_eng.searching.a_star_changes_opt import find_path_a_star_p
 from ai_data_eng.searching.globals import DATA_DIR
 from ai_data_eng.searching.graph import Graph, add_constant_change_time
 from ai_data_eng.searching.heuristics import ChangeHeuristic
@@ -21,8 +21,8 @@ connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
                                         'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
                                         'end_stop_lon'])
 g = Graph(connection_graph, add_constant_change_time)
-goal, (came_from_conn, stop_conn), cost_so_far = find_path(g, ChangeHeuristic(), g.change_cost_between_conns,
-                                                         g.get_lines_from, start_stop, goal_stop, leave_hour)
+goal, (came_from_conn, stop_conn), cost_so_far = find_path_a_star_p(g, ChangeHeuristic(), g.change_cost_between_conns,
+                                                                    g.get_lines_from, start_stop, goal_stop, leave_hour)
 end = timer()
 
 print(goal)

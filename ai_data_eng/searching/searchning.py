@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 TIME_AND_CHANGE_HEURISTIC = {
-    'a': 0.05, 'b': 0.5
+    'a': 0.01, 'b': 0.5
 }
 
 
@@ -58,9 +58,9 @@ def idxs_to_nodes(graph: Graph, goal_idx: int, conn_idxs: dict):
 
 
 def print_path(connections, print_to=None):
-    for conn in connections:
+    for i, conn in enumerate(connections):
         print(
-            f'{conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}]',
+            f'({i}) {conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}] [{conn.name}]',
             file=print_to)
 
 

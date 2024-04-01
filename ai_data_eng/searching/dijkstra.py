@@ -12,7 +12,8 @@ from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
 
-def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
+
+def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
 
     dep_time = time_to_normalized_sec(leave_hour)
 
@@ -55,8 +56,8 @@ def find_path(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start
 def dijkstra(start_stop: str, goal_stop: str, leave_hour: str, change_time: int):
     with open(DIJKSTRA / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
-        graph, goal_index, came_from, costs, elapsed_time = run_solution(find_path, start_stop, goal_stop,
-                                                                    leave_hour, change_time, OptimizationType.TIME)
+        graph, goal_index, came_from, costs, elapsed_time = run_solution(find_path_dijkstra, start_stop, goal_stop,
+                                                                         leave_hour, change_time, OptimizationType.TIME)
 
         connections = idxs_to_nodes(graph, goal_index, came_from)
         assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)

@@ -11,8 +11,8 @@ from ai_data_eng.searching.searchning import a_star_print_info, PrioritizedItem,
 from ai_data_eng.searching.utils import *
 
 
-def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
-              neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
+def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
+                       neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
     # print_info = a_star_print_info(lambda x: round(x, 2))
@@ -63,10 +63,11 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
         # i += 1
         graph.exclude_stop_and_line(current, line)
 
+    graph.reset()
     return goal, (came_from_conn, stop_conn), cost_so_far
 
 
-def path_to_list(goal, came_from_conn, stop_conn):
+def path_to_list_p(goal, came_from_conn, stop_conn):
     line, current = goal
     index = stop_conn[(line, current)]
     conns = []
@@ -83,10 +84,10 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
     with open(run_dir / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
         graph, goal, came_from, costs, elapsed_time = run_solution(
-            partial(find_path, heuristic=heuristic),
+            partial(find_path_a_star_p, heuristic=heuristic),
             start_stop, goal_stop, leave_hour, change_time, criterion=heuristic.criterion)
         came_from_conn, stop_conn = came_from
-        conns = path_to_list(goal, came_from_conn, stop_conn)
+        conns = path_to_list_p(goal, came_from_conn, stop_conn)
         connections = [graph.conn_at_index(idx) for idx in conns]
         # assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
         print_path(connections, f)
@@ -100,9 +101,9 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
 def a_star_changes_opt_light(start_stop: str, goal_stop: str, leave_hour: str,
                        heuristic: Heuristic, change_time=0):
     graph, goal, came_from, costs, elapsed_time = run_solution(
-        partial(find_path, heuristic=heuristic),
+        partial(find_path_a_star_p, heuristic=heuristic),
         start_stop, goal_stop, leave_hour, change_time, criterion=heuristic.criterion)
     came_from_conn, stop_conn = came_from
-    conns = path_to_list(goal, came_from_conn, stop_conn)
+    conns = path_to_list_p(goal, came_from_conn, stop_conn)
     connections = [graph.conn_at_index(idx) for idx in conns]
     return graph, connections
