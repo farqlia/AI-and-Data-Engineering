@@ -57,9 +57,10 @@ def rename_stop(stop, prefix='end'):
     if isinstance(stop, pd.DataFrame):
         return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
                             f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, axis=1, errors='ignore')
-    else:
+    elif isinstance(stop, pd.Series):
         return stop.rename({f'{prefix}_stop_lat': 'stop_lat',
                             f'{prefix}_stop_lon': 'stop_lon', f'{prefix}_stop': 'stop'}, errors='ignore')
+
 
 def stop_as_tuple(stop, prefix='end'):
     stop = rename_stop(stop, prefix)

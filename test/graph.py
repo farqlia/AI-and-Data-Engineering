@@ -110,5 +110,12 @@ def test_is_conn_changed(g):
     subconn = g.conn_graph.loc[14555:14559]
     print(subconn.loc[~is_conn_change(g.conn_graph.loc[14557], subconn)])
 
+def test_add_change_conn_time(g):
+    subconn = g.conn_graph.loc[14555:14559]
+    print(add_const_change_time(subconn, g.conn_graph.loc[14557]))
+
 def test_get_earliest_line_cont(g):
     print(g.get_earliest_from_with_and_without_change(g.conn_graph.loc[14557]))
+
+def test_possible_stop_names(g):
+    print(g.get_neighbour_stops('PL. GRUNWALDZKI'))

@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 TIME_AND_CHANGE_HEURISTIC = {
-    'a': 0.1, 'b': 0.5
+    'a': 0.05, 'b': 0.5
 }
 
 

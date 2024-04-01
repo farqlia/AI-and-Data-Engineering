@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Tuple
 
 Stop = Tuple[str, float, float]
+UPPER_BOUND_CONN_TIME = 240.0
 
 DEBUG = True
 

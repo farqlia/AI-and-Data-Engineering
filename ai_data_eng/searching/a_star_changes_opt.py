@@ -15,7 +15,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
               neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
-    print_info = a_star_print_info(lambda x: round(x, 2))
+    # print_info = a_star_print_info(lambda x: round(x, 2))
     cost_so_far = {}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
@@ -30,7 +30,6 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     came_from_conn[('', start_stop)] = None
     item = PrioritizedItem(cost_so_far[('', start_stop)], ('', start_stop))
     frontier.put(item)
-    closest_set = {('', start_stop)}
 
     start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
 
@@ -49,14 +48,10 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             # theory - first found is the best
             break
         # print(f'[{i}]')
-        current_stop = graph.stop_as_tuple(graph.rename_stop(conn))
-        for next_conn in neighbours_gen(conn['arrival_sec'], current_stop, conn['line'], closest_set).itertuples():
+        for next_conn in neighbours_gen(conn).itertuples():
             # cost of commuting start --> current and current --> next
-            next_stop_coords = graph.compute_stop_coords(next_conn.end_stop)
-            next_stop = (next_conn.end_stop, next_stop_coords.stop_lat, next_stop_coords.stop_lon)
             new_cost = cost_so_far[(line, current)] + cost_func(prev_conn=conn, next_conn=next_conn)
-            heuristic_cost = heuristic.compute(start_stop, current_stop, next_stop, goal_stop,
-                                               conn, next_conn, new_cost)
+            heuristic_cost = heuristic.compute(start_stop, goal_stop, conn, next_conn, new_cost)
             approx_goal_cost = new_cost + heuristic_cost
             if (next_conn.line, next_conn.end_stop) not in cost_so_far or new_cost < cost_so_far[(next_conn.line, next_conn.end_stop)]:
                 # print_info(next_conn, new_cost, heuristic_cost)
@@ -66,7 +61,7 @@ def find_path(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                 stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
         # i += 1
-        closest_set.add((line, current))
+        graph.exclude_stop_and_line(current, line)
 
     return goal, (came_from_conn, stop_conn), cost_so_far
 
