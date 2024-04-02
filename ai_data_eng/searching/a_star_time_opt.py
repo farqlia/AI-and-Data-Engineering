@@ -82,7 +82,7 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
             partial(find_path_a_star_t, heuristic=heuristic),
             start_stop, goal_stop, leave_hour, change_time, heuristic.criterion)
         connections = idxs_to_nodes(graph, goal_index, came_from)
-        assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
+        assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, goal_stop, connections)
         print_path(connections, f)
         solution_cost = costs[graph.conn_at_index(goal_index).end_stop]
         print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)

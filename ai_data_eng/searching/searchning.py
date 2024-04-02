@@ -64,6 +64,19 @@ def print_path(connections, print_to=None):
             file=print_to)
 
 
+def print_path_mark_stops(connections, mark_stops, print_to=None):
+    mark_stops = set(mark_stops)
+    for i, conn in enumerate(connections):
+        is_in_to_marked = conn["start_stop"] in mark_stops
+        print(
+            f'({i}) {"**" if is_in_to_marked else ""} {conn["start_stop"]} [{sec_to_time(conn["departure_sec"])}] --- {conn["line"]} ---> {conn["end_stop"]} [{sec_to_time(conn["arrival_sec"])}] [{conn.name}]',
+            file=print_to)
+        if is_in_to_marked:
+            mark_stops.remove(conn["start_stop"])
+
+
+
+
 def write_solution_to_file(filename, connections, leave_hour, elapsed_time, solution_cost, change_time):
     with open(str(filename) + f'{change_time}', mode='a', encoding='utf-8') as file:
         conn_time = diff(connections[-1]['arrival_sec'], time_to_normalized_sec(leave_hour))
@@ -71,13 +84,15 @@ def write_solution_to_file(filename, connections, leave_hour, elapsed_time, solu
         file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost},{change_time}\n')
 
 
-def assert_connection_path(dept_time, connections):
-    if connections[0]['departure_sec'] < dept_time:
-        return False
+def assert_connection_path(dept_time, start_stop, goal_stop, connections):
+    assert connections[0]['departure_sec'] >= dept_time, f"{connections[0]['departure_sec']} is before {dept_time}!"
+    assert connections[0]['start_stop'] == start_stop, f"start stop {connections[0]['start_stop']} is not the desired {start_stop}"
+
     for i in range(len(connections) - 1):
-        if diff(connections[i + 1]['departure_sec'], connections[i + 1]['arrival_sec']) < 0:
-            return False
-    return True
+        time_diff = diff(connections[i + 1]['departure_sec'], connections[i]['arrival_sec'])
+        assert time_diff >= 0, f"[{i}] connection has invalid time! {time_diff}"
+        assert (connections[i + 1]['start_stop'] == connections[i]['end_stop']), f"{[i]} has different start and end stops! ends at {connections[i]['end_stop']}, starts at {connections[i + 1]['start_stop']}"
+    assert connections[-1]['end_stop'] == goal_stop, f"goal stop {connections[-1]['end_stop']} is not the desired {goal_stop}"
 
 
 class OptimizationType(Enum):
