@@ -57,6 +57,10 @@ def idxs_to_nodes(graph: Graph, goal_idx: int, conn_idxs: dict):
     return [graph.conn_at_index(idx) for idx in idx_path[1:]]
 
 
+def connections_idx(connections):
+    return tuple(conn.name for conn in connections)
+
+
 def print_path(connections, print_to=None):
     for i, conn in enumerate(connections):
         print(
