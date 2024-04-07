@@ -33,6 +33,13 @@ def get_matched_connections(connections, visiting_stops):
     return indexes
 
 
+def get_judge_func(criterion: OptimizationType):
+    if criterion == OptimizationType.TIME:
+        return judge_t_solution
+    else:
+        return judge_p_solution
+
+
 def judge_t_solution(solution):
     conn_time = diff(solution[-1]['arrival_sec'], solution[0]['departure_sec'])
     return conn_time

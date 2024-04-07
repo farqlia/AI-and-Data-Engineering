@@ -39,21 +39,25 @@ def get_connection_path(g: Graph, criterion: OptimizationType):
 
 
 def naive_solution(g: Graph):
+
     def naive_solution_for_graph(criterion: OptimizationType, start_stop: str, visiting_stops: List[str],
                                  leave_hour: str):
         a_star = get_a_star(g)(criterion)
         conn_path = get_connection_path(g, criterion)
+
         prev_stop = start_stop
         solution = []
         for stop in visiting_stops:
-            goal, came_from, costs = a_star(start_stop=prev_stop, goal_stop=stop, leave_hour=leave_hour)
+            goal, came_from, costs = a_star(start_stop=prev_stop, goal_stop=stop, leave_hour=leave_hour,
+                                            prev_conn_idx=solution[-1].name if solution else None)
             subsol = conn_path(goal, came_from)
             solution += subsol
             prev_stop = stop
             # add change time
             leave_hour = sec_to_time(subsol[-1]['arrival_sec'])
             g.reset()
-        goal, came_from, costs = a_star(start_stop=prev_stop, goal_stop=start_stop, leave_hour=leave_hour)
+        goal, came_from, costs = a_star(start_stop=prev_stop, goal_stop=start_stop, leave_hour=leave_hour,
+                                        prev_conn_idx=solution[-1].name)
         solution += conn_path(goal, came_from)
         g.reset()
         return solution

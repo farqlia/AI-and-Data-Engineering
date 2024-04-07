@@ -13,7 +13,6 @@ from ai_data_eng.searching.utils import *
 
 def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                        neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str, prev_conn_idx=None):
-    frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
     # print_info = a_star_print_info(lambda x: round(x, 2))
     cost_so_far = {}
@@ -70,15 +69,16 @@ def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
 
 
 def path_to_list_p(goal, came_from_conn, stop_conn):
-    line, current = goal
-    index = stop_conn[(line, current)]
+    came_from = goal
     conns = []
-    while index > 0:
-        conns.append(index)
-        (line, current) = came_from_conn[(line, current)]
+    while came_from:
+        line, current = came_from
         index = stop_conn[(line, current)]
+        conns.append(index)
+        came_from = came_from_conn[(line, current)]
+
     conns.reverse()
-    return conns
+    return conns[1:]
 
 
 def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,

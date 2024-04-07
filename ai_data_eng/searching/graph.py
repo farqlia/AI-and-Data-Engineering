@@ -156,6 +156,26 @@ class Graph:
                                                    'end_stop_lat', 'end_stop_lon'])
         return first_conns
 
+    def get_lines_from_with_and_without_change(self, prev_conn: pd.Series):
+        possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == prev_conn.end_stop)]
+        time_arrv_diff = diff(possible_conns['arrival_sec'], prev_conn.arrival_sec)
+        time_dep_diff = diff(possible_conns['departure_sec'],
+                             self.change_time_compute(conns=possible_conns, prev_conn=prev_conn))
+
+        differences = (time_arrv_diff - time_dep_diff) >= 0
+        valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
+
+        valid_conns = possible_conns.loc[valid_time_arrv_diff.index]
+
+        if prev_conn.line != '':
+            line_continuation = valid_conns[~is_conn_change(prev_conn, valid_conns)]
+            valid_conns = pd.concat([line_continuation, valid_conns])
+
+        first_conns = valid_conns.drop_duplicates(['line', 'start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon',
+                                                   'end_stop_lat', 'end_stop_lon'])
+
+        return first_conns
+
     def get_earliest_from_with_and_without_change(self, prev_conn: pd.Series):
         possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == prev_conn.end_stop)]
         time_arrv_diff = diff(possible_conns['arrival_sec'], prev_conn.arrival_sec)

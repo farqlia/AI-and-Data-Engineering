@@ -36,9 +36,10 @@ def is_not_loop(conn_from, conn_to):
 
 
 def insert_conn_between(g: Graph, criterion: OptimizationType):
+    conn_s_f_e_t = conn_start_from_end_to(g, criterion)
+    conn_e_f_e_t = conn_end_from_end_to(g, criterion)
+
     def insert_for_conn(connections, m, k, i, j):
-        conn_s_f_e_t = conn_start_from_end_to(g, criterion)
-        conn_e_f_e_t = conn_end_from_end_to(g, criterion)
         solution = connections[:m] + (
             conn_s_f_e_t(connections[m], connections[i], prev_conn_idx=connections[m - 1].name if m > 0 else None)
             if is_not_loop(connections[m], connections[i]) else [])
