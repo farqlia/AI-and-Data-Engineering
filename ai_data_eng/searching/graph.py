@@ -1,15 +1,15 @@
 from typing import List, Set
 
-import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import Stop, UPPER_BOUND_CONN_TIME
-from ai_data_eng.searching.utils import time_to_normalized_sec, diff, distance_m, stop_as_tuple
+from ai_data_eng.searching.utils import time_to_normalized_sec, diff, distance_m
 
 pd.options.mode.chained_assignment = None
 
 END_STOP_COLS = ['end_stop', 'end_stop_lat', 'end_stop_lon']
 START_STOP_COLS = ['start_stop', 'start_stop_lat', 'start_stop_lon']
+
 
 class Graph:
 
@@ -44,7 +44,6 @@ class Graph:
         s_df = self.get_possible_stops(stop)
         return [self.stop_as_tuple(s) for (i, s) in s_df.iterrows()]
 
-
     # We could take as the initial stop the closest stop to the goal stop
     def compute_stop_coords(self, stop: str):
         stops = self.get_possible_stops(stop)
@@ -78,7 +77,8 @@ class Graph:
         '''Returns neighbouring end stops'''
         # return self.conn_graph[self.conn_graph['start_stop'] == start_stop][['line', 'end_stop']].drop_duplicates()
         end_stops = self.rename_stop(self.conn_graph[self.conn_graph['start_stop'] == stop][['end_stop']])
-        start_stops = self.rename_stop(self.conn_graph[self.conn_graph['end_stop'] == stop][['start_stop']], prefix='start')
+        start_stops = self.rename_stop(self.conn_graph[self.conn_graph['end_stop'] == stop][['start_stop']],
+                                       prefix='start')
         return pd.concat([end_stops, start_stops]).drop_duplicates(['stop'])['stop'].values
 
     def get_neighbour_lines_t(self, stop: Stop) -> List:
@@ -100,7 +100,8 @@ class Graph:
 
         valid_conns = possible_conns.loc[valid_time_arrv_diff.index]
 
-        first_conns = (valid_conns.drop_duplicates(['line', 'start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
+        first_conns = (valid_conns.drop_duplicates(
+            ['line', 'start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
 
         return first_conns
 
@@ -128,7 +129,7 @@ class Graph:
         valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
 
         first_conns = ((possible_conns.loc[valid_time_arrv_diff.index]
-                        .groupby(
+        .groupby(
             ['start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
                        .head(1))
 
@@ -179,7 +180,8 @@ class Graph:
         self.computation_cg = self.computation_cg.loc[self.computation_cg['end_stop'] != stop]
 
     def exclude_stop_and_line(self, stop: str, line: str):
-        self.computation_cg = self.computation_cg.loc[~((self.computation_cg['end_stop'] == stop) & (self.computation_cg['line'] == line))]
+        self.computation_cg = self.computation_cg.loc[
+            ~((self.computation_cg['end_stop'] == stop) & (self.computation_cg['line'] == line))]
 
     def time_cost_between_conns(self, prev_conn: pd.Series, next_conn: pd.Series) -> int:
         cost = diff(next_conn.arrival_sec, prev_conn.arrival_sec)
@@ -188,7 +190,6 @@ class Graph:
     def change_cost_between_conns(self, prev_conn: pd.Series, next_conn: pd.Series) -> int:
         is_first_stop = prev_conn.line == ''
         return 1 if not is_first_stop and is_conn_change(prev_conn, next_conn) else 0
-
 
     def distance_cost(self, prev_conn: pd.Series, next_conn: pd.Series):
         return distance_m(self.stop_as_tuple(self.rename_stop(prev_conn)),
@@ -215,7 +216,8 @@ def is_changing(conns, stop: Stop, line: str, dep_time: int) -> pd.DataFrame:
 def is_conn_change(prev_conn, next_conn):
     return ((prev_conn.end_stop != next_conn.start_stop) | (prev_conn.end_stop_lat != next_conn.start_stop_lat) |
             (prev_conn.end_stop_lon != next_conn.start_stop_lon) |
-            (prev_conn.line != next_conn.line) | (diff(next_conn.departure_sec, prev_conn.arrival_sec) > UPPER_BOUND_CONN_TIME))
+            (prev_conn.line != next_conn.line) | (
+                        diff(next_conn.departure_sec, prev_conn.arrival_sec) > UPPER_BOUND_CONN_TIME))
 
 
 def add_const_change_time(conns, prev_conn, change_time=60):

@@ -1,18 +1,18 @@
-import re
 from functools import partial
 from queue import PriorityQueue
 from typing import Callable
 
-from ai_data_eng.searching.a_star_time_opt import Heuristic
+from ai_data_eng.searching.a_star_p.initialization import initialize_queue_with_prev_conn, initialize_queue
 from ai_data_eng.searching.globals import A_STAR_RUNS_P
 from ai_data_eng.searching.graph import *
-from ai_data_eng.searching.searchning import a_star_print_info, PrioritizedItem, OptimizationType, run_solution, \
-    idxs_to_nodes, assert_connection_path, print_path, write_solution_to_file
+from ai_data_eng.searching.heuristics import Heuristic
+from ai_data_eng.searching.searchning import PrioritizedItem, run_solution, \
+    print_path, write_solution_to_file
 from ai_data_eng.searching.utils import *
 
 
 def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
-                       neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
+                       neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str, prev_conn_idx=None):
     frontier = PriorityQueue()
     dep_time = time_to_normalized_sec(leave_hour)
     # print_info = a_star_print_info(lambda x: round(x, 2))
@@ -24,15 +24,16 @@ def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     goal_stop = (goal_stop, goal_stop_coords['stop_lat'], goal_stop_coords['stop_lon'])
     start_stop_coords = graph.compute_stop_coords(start_stop)
     # print(f'{start_stop} -> {goal_stop}')
-
-    cost_so_far[('', start_stop)] = 0
-    stop_conn[('', start_stop)] = -1
-    came_from_conn[('', start_stop)] = None
-    item = PrioritizedItem(cost_so_far[('', start_stop)], ('', start_stop))
-    frontier.put(item)
+    if prev_conn_idx is not None:
+        frontier = initialize_queue_with_prev_conn(prev_conn_idx, graph=graph, cost_so_far=cost_so_far,
+                                                   came_from_conn=came_from_conn, stop_conn=stop_conn,
+                                                   start_stop=start_stop, dep_time=dep_time)
+    else:
+        frontier = initialize_queue(graph=graph, cost_so_far=cost_so_far,
+                                    came_from_conn=came_from_conn, stop_conn=stop_conn,
+                                    start_stop=start_stop, dep_time=dep_time)
 
     start_stop = (start_stop, start_stop_coords['stop_lat'], start_stop_coords['stop_lon'])
-
     graph.add_conn(dep_time, start_stop, -1)
 
     i = 0
@@ -53,7 +54,8 @@ def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
             new_cost = cost_so_far[(line, current)] + cost_func(prev_conn=conn, next_conn=next_conn)
             heuristic_cost = heuristic.compute(start_stop, goal_stop, conn, next_conn, new_cost)
             approx_goal_cost = new_cost + heuristic_cost
-            if (next_conn.line, next_conn.end_stop) not in cost_so_far or new_cost < cost_so_far[(next_conn.line, next_conn.end_stop)]:
+            if (next_conn.line, next_conn.end_stop) not in cost_so_far or new_cost < cost_so_far[
+                (next_conn.line, next_conn.end_stop)]:
                 # print_info(next_conn, new_cost, heuristic_cost)
                 cost_so_far[(next_conn.line, next_conn.end_stop)] = new_cost
                 item = PrioritizedItem(approx_goal_cost, (next_conn.line, next_conn.end_stop))
@@ -99,7 +101,7 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
 
 
 def a_star_changes_opt_light(start_stop: str, goal_stop: str, leave_hour: str,
-                       heuristic: Heuristic, change_time=0):
+                             heuristic: Heuristic, change_time=0):
     graph, goal, came_from, costs, elapsed_time = run_solution(
         partial(find_path_a_star_p, heuristic=heuristic),
         start_stop, goal_stop, leave_hour, change_time, criterion=heuristic.criterion)

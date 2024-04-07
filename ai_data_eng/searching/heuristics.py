@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from ai_data_eng.searching.graph import Stop, UPPER_BOUND_CONN_TIME
+from ai_data_eng.searching.graph import Stop
 from ai_data_eng.searching.searchning import OptimizationType, TIME_AND_CHANGE_HEURISTIC
 from ai_data_eng.searching.utils import distance_m, diff, rename_stop, stop_as_tuple
 
@@ -14,7 +14,8 @@ class Heuristic(ABC):
         self.criterion = criterion
 
     @abstractmethod
-    def compute(self, start_stop: Stop, goal_stop: Stop, prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
+    def compute(self, start_stop: Stop, goal_stop: Stop, prev_conn: pd.Series, next_conn: pd.Series,
+                cost: int = None) -> int:
         return -1
 
     @abstractmethod
@@ -27,11 +28,13 @@ class MockHeuristic(Heuristic):
     def __init__(self):
         super().__init__(OptimizationType.CHANGES)
 
-    def compute(self, start_stop: Stop, goal_stop: Stop, prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
+    def compute(self, start_stop: Stop, goal_stop: Stop, prev_conn: pd.Series, next_conn: pd.Series,
+                cost: int = None) -> int:
         return 0
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
         pass
+
 
 class MaxVelocityTimeHeuristic(Heuristic):
     def __init__(self):
@@ -94,7 +97,10 @@ class TimeAndChangeHeuristic(Heuristic):
 
     def compute(self, start_stop: Stop, goal_stop: Stop,
                 prev_conn, next_conn, cost: int = None) -> int:
-        return self.a * self.time_heurists.compute(start_stop, goal_stop, prev_conn, next_conn, cost) + self.b * self.change_heuristic.compute(start_stop, goal_stop, prev_conn, next_conn, cost)
+        return self.a * self.time_heurists.compute(start_stop, goal_stop, prev_conn, next_conn,
+                                                   cost) + self.b * self.change_heuristic.compute(start_stop, goal_stop,
+                                                                                                  prev_conn, next_conn,
+                                                                                                  cost)
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
         pass

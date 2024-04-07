@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import io
 import os
+import re
+
 from setuptools import setup
-import re, io
 
 # run pip install -e . to make this a package
 
@@ -12,8 +14,7 @@ import re, io
 __version__ = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',  # It excludes inline comment too
     io.open('ai_data_eng/__init__.py', encoding='utf_8_sig').read()
-    ).group(1)
-
+).group(1)
 
 with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
     print(f.read().splitlines())
@@ -25,7 +26,7 @@ setup(
     name='ai-data-eng-prediction',
     version=__version__,
     packages=['ai_data_eng'],
-    description='AI and Data Engineering.' ,
+    description='AI and Data Engineering.',
     author='Julia Farganus',
     author_email='juliafarganus@gmail.com',
     maintainer_email='juliafarganus@gmail.com',

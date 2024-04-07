@@ -1,13 +1,13 @@
-import csv
+from enum import Enum
 from enum import Enum
 from functools import partial
-from typing import Callable
 
 import numpy as np
 import pandas as pd
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, is_conn_change, add_const_change_time
+from ai_data_eng.searching.graph import Graph, is_conn_change, \
+    add_const_change_time
 from ai_data_eng.searching.utils import sec_to_time, diff, time_to_normalized_sec
 
 pd.options.mode.chained_assignment = None
@@ -58,7 +58,7 @@ def idxs_to_nodes(graph: Graph, goal_idx: int, conn_idxs: dict):
 
 
 def connections_idx(connections):
-    return tuple(conn.name for conn in connections)
+    return tuple(int(conn.name) for conn in connections)
 
 
 def print_path(connections, print_to=None):
@@ -88,18 +88,22 @@ def write_solution_to_file(filename, connections, leave_hour, elapsed_time, solu
     with open(str(filename) + f'{change_time}', mode='a', encoding='utf-8') as file:
         conn_time = diff(connections[-1]['arrival_sec'], time_to_normalized_sec(leave_hour))
         line_changes = get_number_of_line_changes(connections)
-        file.write(f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost},{change_time}\n')
+        file.write(
+            f'{connections[0]["start_stop"]},{connections[-1]["end_stop"]},{sec_to_time(conn_time)},{line_changes},{round(elapsed_time, 2)},{solution_cost},{change_time}\n')
 
 
 def assert_connection_path(dept_time, start_stop, goal_stop, connections):
     assert connections[0]['departure_sec'] >= dept_time, f"{connections[0]['departure_sec']} is before {dept_time}!"
-    assert connections[0]['start_stop'] == start_stop, f"start stop {connections[0]['start_stop']} is not the desired {start_stop}"
+    assert connections[0][
+               'start_stop'] == start_stop, f"start stop {connections[0]['start_stop']} is not the desired {start_stop}"
 
     for i in range(len(connections) - 1):
         time_diff = diff(connections[i + 1]['departure_sec'], connections[i]['arrival_sec'])
         assert time_diff >= 0, f"[{i}] connection has invalid time! {time_diff}"
-        assert (connections[i + 1]['start_stop'] == connections[i]['end_stop']), f"{[i]} has different start and end stops! ends at {connections[i]['end_stop']}, starts at {connections[i + 1]['start_stop']}"
-    assert connections[-1]['end_stop'] == goal_stop, f"goal stop {connections[-1]['end_stop']} is not the desired {goal_stop}"
+        assert (connections[i + 1]['start_stop'] == connections[i][
+            'end_stop']), f"{[i]} has different start and end stops! ends at {connections[i]['end_stop']}, starts at {connections[i + 1]['start_stop']}"
+    assert connections[-1][
+               'end_stop'] == goal_stop, f"goal stop {connections[-1]['end_stop']} is not the desired {goal_stop}"
 
 
 class OptimizationType(Enum):

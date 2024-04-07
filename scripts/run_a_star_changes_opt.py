@@ -1,10 +1,11 @@
+import os
 import shutil
 
 import pandas as pd
-import os
-from ai_data_eng.searching.globals import DATA_DIR, A_STAR_RUNS_P
 from ai_data_eng.searching.a_star_changes_opt import a_star_changes_opt
-from ai_data_eng.searching.heuristics import WeightedAverageTimeHeuristic, ChangeHeuristic, MockHeuristic
+
+from ai_data_eng.searching.globals import DATA_DIR, A_STAR_RUNS_P
+from ai_data_eng.searching.heuristics import ChangeHeuristic
 
 test_cases = pd.read_json(DATA_DIR / 'test_cases/test_cases.json')
 test_cases = test_cases.values.tolist()

@@ -1,20 +1,20 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, add_const_change_time, is_conn_change
-from ai_data_eng.searching.utils import time_to_normalized_sec
+from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, add_const_change_time, \
+    is_conn_change
 from ai_data_eng.searching.heuristics import MaxVelocityTimeHeuristic
+from ai_data_eng.searching.utils import time_to_normalized_sec
+
 
 @pytest.fixture
 def g():
-    connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv', 
-                               usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
-       'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
-       'end_stop_lon'])
+    connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
+                                   usecols=['line', 'departure_time', 'arrival_time', 'start_stop',
+                                            'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
+                                            'end_stop_lon'])
     return Graph(connection_graph, add_const_change_time)
 
 
@@ -33,10 +33,12 @@ def test_departure_time(g):
     g.add_conn(dep_time, g.rename_stop(g.conn_at_index(64785)), -1)
     print(add_constant_change_time(g.conn_graph.loc[71820:71821], g.conn_at_index(-1)))
 
+
 def test_null(g):
     data = {'set_of_numbers': [1, 2, 3, 4, 5, np.nan, 6, 7, np.nan, 8, 9, 10, np.nan]}
     df = pd.DataFrame(data)
     print(df['set_of_numbers'].isnull())
+
 
 def test_null(g):
     data = {'set_of_numbers': ['1', '2', '', '']}
@@ -44,13 +46,13 @@ def test_null(g):
     print(df['set_of_numbers'] == '')
 
 
-
 def test_outgoing_from(g):
     unique_conns = g.conn_graph.loc[g.conn_graph['start_stop'] == 'PL. GRUNWALDZKI', ['start_stop',
-       'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat',
-       'end_stop_lon']].drop_duplicates()
+                                                                                      'end_stop', 'start_stop_lat',
+                                                                                      'start_stop_lon', 'end_stop_lat',
+                                                                                      'end_stop_lon']].drop_duplicates()
     print(unique_conns[['start_stop',
-       'end_stop']])
+                        'end_stop']])
 
 
 def test_is_changing(g):
@@ -62,7 +64,8 @@ def test_is_changing(g):
 def test_outgoing_from(g):
     index = 1
     print(g.rename_stop(g.conn_at_index(index)))
-    conns = g.get_earliest_from(time_to_normalized_sec('08:00:00'), g.stop_as_tuple(g.rename_stop(g.conn_at_index(index))), '')
+    conns = g.get_earliest_from(time_to_normalized_sec('08:00:00'),
+                                g.stop_as_tuple(g.rename_stop(g.conn_at_index(index))), '')
     print([conn for conn in conns])
 
 
@@ -76,7 +79,7 @@ def test_outgoing_from_2(g):
 def test_different_approach(g):
     conns = g.conn_graph.loc[g.conn_graph['start_stop'] == 'PL. GRUNWALDZKI']
     grouped = conns.groupby(['start_stop', 'end_stop', 'start_stop_lat',
-                             'start_stop_lon', 'end_stop_lat',  'end_stop_lon'])
+                             'start_stop_lon', 'end_stop_lat', 'end_stop_lon'])
     first_rows = grouped.head(1)
     print(first_rows)
 
@@ -106,16 +109,20 @@ def test_neigh_lines(g):
     print(g.get_neighbour_lines('PL. GRUNWALDZKI'))
     print(g.compute_stop_coords('PL. GRUNWALDZKI'))
 
+
 def test_is_conn_changed(g):
     subconn = g.conn_graph.loc[14555:14559]
     print(subconn.loc[~is_conn_change(g.conn_graph.loc[14557], subconn)])
+
 
 def test_add_change_conn_time(g):
     subconn = g.conn_graph.loc[14555:14559]
     print(add_const_change_time(subconn, g.conn_graph.loc[14557]))
 
+
 def test_get_earliest_line_cont(g):
     print(g.get_earliest_from_with_and_without_change(g.conn_graph.loc[14557]))
+
 
 def test_possible_stop_names(g):
     print(g.get_neighbour_stops('PL. GRUNWALDZKI'))

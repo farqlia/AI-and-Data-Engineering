@@ -1,16 +1,14 @@
 from functools import partial
-from queue import PriorityQueue
-from queue import PriorityQueue
 from typing import Callable
 
 import pandas as pd
 
+from ai_data_eng.searching.a_star_t.initialization import initialize_queue, initialize_queue_with_prev_conn
 from ai_data_eng.searching.globals import A_STAR_RUNS_T
 from ai_data_eng.searching.graph import Graph
 from ai_data_eng.searching.heuristics import Heuristic
-from ai_data_eng.searching.initialization import initialize_queue, initialize_with_prev_conn
 from ai_data_eng.searching.searchning import run_solution, assert_connection_path, idxs_to_nodes, \
-    print_path, OptimizationType, PrioritizedItem, write_solution_to_file, a_star_print_info
+    print_path, PrioritizedItem, write_solution_to_file
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
@@ -18,7 +16,6 @@ pd.options.mode.chained_assignment = None
 
 def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                        neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str, prev_conn_idx=None):
-
     dep_time = time_to_normalized_sec(leave_hour)
 
     # print_info = a_star_print_info(sec_to_time)
@@ -28,13 +25,13 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     stop_conn = {}
 
     if prev_conn_idx is not None:
-        frontier = initialize_with_prev_conn(prev_conn_idx, graph=graph, cost_so_far=cost_so_far,
-                                   came_from_conn=came_from_conn, stop_conn=stop_conn,
-                                   start_stop=start_stop, dep_time=dep_time)
+        frontier = initialize_queue_with_prev_conn(prev_conn_idx, graph=graph, cost_so_far=cost_so_far,
+                                                   came_from_conn=came_from_conn, stop_conn=stop_conn,
+                                                   start_stop=start_stop, dep_time=dep_time)
     else:
         frontier = initialize_queue(graph=graph, cost_so_far=cost_so_far,
-                                             came_from_conn=came_from_conn, stop_conn=stop_conn,
-                                             start_stop=start_stop, dep_time=dep_time)
+                                    came_from_conn=came_from_conn, stop_conn=stop_conn,
+                                    start_stop=start_stop, dep_time=dep_time)
 
     item = PrioritizedItem(cost_so_far[start_stop], start_stop)
     frontier.put(item)
@@ -90,14 +87,15 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
         solution_cost = costs[graph.conn_at_index(goal_index).end_stop]
         print(f'Total trip time is {sec_to_time(solution_cost)}', file=f)
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
-        write_solution_to_file(A_STAR_RUNS_T / 'summary', connections, leave_hour, elapsed_time, solution_cost, change_time)
+        write_solution_to_file(A_STAR_RUNS_T / 'summary', connections, leave_hour, elapsed_time, solution_cost,
+                               change_time)
     return graph, connections
 
 
 def a_star_time_opt_light(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, change_time,
-                    initialization_func=initialize_queue):
+                          initialization_func=initialize_queue):
     graph, goal_index, came_from, costs, elapsed_time = run_solution(
-            partial(find_path_a_star_t, heuristic=heuristic, initialization_func=initialization_func),
-            start_stop, goal_stop, leave_hour, change_time, heuristic.criterion)
+        partial(find_path_a_star_t, heuristic=heuristic, initialization_func=initialization_func),
+        start_stop, goal_stop, leave_hour, change_time, heuristic.criterion)
     connections = idxs_to_nodes(graph, goal_index, came_from)
     return graph, connections

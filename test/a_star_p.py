@@ -1,12 +1,5 @@
-from pathlib import Path
-
-import numpy as np
-import pandas as pd
-import pytest
-
 from ai_data_eng.searching.a_star_changes_opt import find_path_a_star_p
-from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time
+
 from ai_data_eng.searching.heuristics import ChangeHeuristic
 from ai_data_eng.searching.searchning import *
 

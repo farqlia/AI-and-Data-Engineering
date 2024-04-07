@@ -1,11 +1,10 @@
-from queue import PriorityQueue
 from typing import Callable
 
 import pandas as pd
+from ai_data_eng.searching.initialization import initialize_queue
 
 from ai_data_eng.searching.globals import DIJKSTRA
 from ai_data_eng.searching.graph import Graph
-from ai_data_eng.searching.initialization import initialize_queue
 from ai_data_eng.searching.searchning import run_solution, assert_connection_path, idxs_to_nodes, \
     print_path, OptimizationType, PrioritizedItem, write_solution_to_file
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
@@ -13,8 +12,8 @@ from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 pd.options.mode.chained_assignment = None
 
 
-def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str):
-
+def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callable, start_stop: str, goal_stop: str,
+                       leave_hour: str):
     dep_time = time_to_normalized_sec(leave_hour)
 
     cost_so_far = {}

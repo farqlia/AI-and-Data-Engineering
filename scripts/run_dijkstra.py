@@ -18,4 +18,3 @@ for test_case in test_cases:
 
 for test_case in test_cases:
     dijkstra(*test_case, change_time=60)
-
