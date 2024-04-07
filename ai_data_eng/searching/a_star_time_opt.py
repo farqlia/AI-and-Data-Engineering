@@ -22,7 +22,7 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
     dep_time = time_to_normalized_sec(leave_hour)
 
     # print_info = a_star_print_info(sec_to_time)
-    cost_so_far = {}
+    cost_so_far = {start_stop: 0}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
     stop_conn = {}
@@ -35,6 +35,9 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
         frontier = initialize_queue(graph=graph, cost_so_far=cost_so_far,
                                              came_from_conn=came_from_conn, stop_conn=stop_conn,
                                              start_stop=start_stop, dep_time=dep_time)
+
+    item = PrioritizedItem(cost_so_far[start_stop], start_stop)
+    frontier.put(item)
 
     closest_set = {start_stop}
     goal_stop_index = None

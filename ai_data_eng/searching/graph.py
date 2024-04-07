@@ -135,7 +135,9 @@ class Graph:
         return first_conns
 
     def get_earliest_from_to(self, from_conn, to_conn):
-        possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == from_conn.end_stop) & (self.computation_cg['end_stop'] == to_conn.end_stop)]
+        possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == from_conn.end_stop)
+                                             & (self.computation_cg['end_stop'] == to_conn.end_stop)]
+
         time_arrv_diff = diff(possible_conns['arrival_sec'], from_conn.arrival_sec)
         time_dep_diff = diff(possible_conns['departure_sec'],
                              self.change_time_compute(conns=possible_conns, prev_conn=from_conn))
