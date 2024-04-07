@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -52,10 +53,11 @@ class MaxVelocityTimeHeuristic(Heuristic):
 
 class WeightedAverageTimeHeuristic(Heuristic):
 
-    def __init__(self, alpha=0.01, velocity=10):
+    def __init__(self, alpha=0.01, velocity=10, epsilon=0.1):
         super().__init__(OptimizationType.TIME)
         self.alpha = alpha
         self.velocity = velocity
+        self.epsilon = epsilon
 
     def compute(self, start_stop: Stop, goal_stop: Stop,
                 prev_conn: pd.Series, next_conn: pd.Series, cost: int = None) -> int:
@@ -66,8 +68,16 @@ class WeightedAverageTimeHeuristic(Heuristic):
         time_from_prev = diff(next_conn.arrival_sec, next_conn.departure_sec)
         if time_from_prev > 0:
             self.velocity = self.alpha * (dist_from_prev / time_from_prev) + (1 - self.alpha) * self.velocity
-        heuristic_time = distance_m(stop_to, goal_stop) / self.velocity
+        if cost > 0 and self.is_close_to_real_value(start_stop, prev_conn, cost):
+            self.velocity *= 2
+        heuristic_time = math.floor(distance_m(stop_to, goal_stop) / self.velocity)
         return heuristic_time
+
+    def is_close_to_real_value(self, start_stop: Stop, prev_conn: pd.Series, cost: int = None):
+        stop_from = stop_as_tuple(rename_stop(prev_conn))
+        prev_dist = distance_m(start_stop, stop_from)
+        heuristic_time = prev_dist / self.velocity
+        return (heuristic_time - cost) / cost > self.epsilon
 
     def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
         pass

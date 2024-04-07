@@ -10,7 +10,7 @@ DEBUG = True
 
 DATA_DIR = Path('../data')
 if DEBUG:
-    RESULTS = DATA_DIR / 'debug-tabu'
+    RESULTS = DATA_DIR / 'improved-heuristic'
 else:
     RESULTS = DATA_DIR / 'results'
 os.makedirs(RESULTS, exist_ok=True)

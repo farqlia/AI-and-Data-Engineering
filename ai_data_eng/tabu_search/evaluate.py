@@ -32,7 +32,7 @@ def get_matched_connections(connections, visiting_stops):
         if conn['end_stop'] in visiting_stops:
             indexes.add(i)
     indexes = list(indexes)
-    sorted(indexes)
+    indexes = sorted(indexes)
     return indexes
 
 

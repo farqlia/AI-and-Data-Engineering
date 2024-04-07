@@ -17,5 +17,3 @@ if os.path.exists(A_STAR_RUNS_T):
 for test_case in test_cases:
     a_star_time_opt(*test_case, change_time=0, heuristic=WeightedAverageTimeHeuristic())
 
-for test_case in test_cases:
-    a_star_time_opt(*test_case, change_time=60, heuristic=WeightedAverageTimeHeuristic())

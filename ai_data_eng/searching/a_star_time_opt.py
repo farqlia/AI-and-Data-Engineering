@@ -61,7 +61,7 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
         for next_conn in neighbours_gen(conn).itertuples():
             # cost of commuting start --> current and current --> next
             new_cost = cost + cost_func(next_conn=next_conn, prev_conn=conn)
-            heuristic_cost = heuristic.compute(start_stop, goal_stop, conn, next_conn)
+            heuristic_cost = heuristic.compute(start_stop, goal_stop, conn, next_conn, cost=cost)
             approx_goal_cost = new_cost + heuristic_cost
             if next_conn.end_stop not in cost_so_far or new_cost < cost_so_far[next_conn.end_stop]:
                 cost_so_far[next_conn.end_stop] = new_cost

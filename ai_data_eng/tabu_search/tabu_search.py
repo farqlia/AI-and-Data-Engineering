@@ -31,6 +31,7 @@ def tabu_search(g: Graph, criterion: OptimizationType, start_stop: str, visiting
     found_solutions = set()
     insert_conn = insert_conn_between(g, criterion)
     with open(TABU_SEARCH_DIR / stop_name(start_stop), mode='w', encoding='utf-8') as f:
+        f = None
         print_path_mark_stops(solution, visiting_stops, f)
         print(get_matched_stops(solution, visiting_stops), file=f)
 
@@ -39,37 +40,37 @@ def tabu_search(g: Graph, criterion: OptimizationType, start_stop: str, visiting
             curr_min = solution
             indexes_of_matched = get_matched_connections(solution, visiting_stops)
             print(f"cost = {round(curr_min_cost, 2)}", file=f)
-            for o in range(len(indexes_of_matched) - 1):
-                i, j = indexes_of_matched[o], indexes_of_matched[o + 1]
-                print(f"--------- [{o}] i={i}, j={j} -----------", file=f)
-                for k in range(i):
-                    print(f"k = {k}", file=f)
-                    for m in range(k):
-                        print(f"m = {m}", file=f)
-                        perturbated_solution = insert_conn(solution, m, k, i, j)
-                        assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, start_stop,
-                                               perturbated_solution)
-                        pert_cost = judge_t_solution(perturbated_solution, visiting_stops)
-                        matched_all_stops = get_matched_stops(perturbated_solution, visiting_stops)[0] == len(
-                            visiting_stops)
-                        sol_idx = connections_idx(perturbated_solution)
+            o = 4
+            # for o in range(len(indexes_of_matched) - 1):
+            i, j = indexes_of_matched[o], indexes_of_matched[o + 1]
+            print(f"--------- [{o}] i={i}, j={j} -----------", file=f)
+            for k in range(i):
+                print(f"k = {k}", file=f)
+                for m in range(k):
+                    print(f"m = {m}", file=f)
+                    perturbated_solution = insert_conn(solution, m, k, i, j)
+                    assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, start_stop,
+                                           perturbated_solution)
+                    pert_cost = judge_t_solution(perturbated_solution, visiting_stops)
+                    matched_all_stops = get_matched_stops(perturbated_solution, visiting_stops)[0] == len(
+                        visiting_stops)
+                    sol_idx = connections_idx(perturbated_solution)
 
-                        not_yet_visited = sol_idx not in found_solutions
-                        if not_yet_visited:
-                            found_solutions.add(sol_idx)
-                            if matched_all_stops and pert_cost < curr_min_cost:
-                                print(f"IMPROVEMENT", file=f)
-                                print_path_mark_stops(perturbated_solution, visiting_stops, f)
-                                print(get_matched_stops(perturbated_solution, visiting_stops), file=f)
-                                print(f"cost = {round(pert_cost, 2)}", file=f)
-                                curr_min = perturbated_solution
-                                curr_min_cost = pert_cost
-                            elif matched_all_stops:
-                                print(f"NOT IMPROVEMENT of {round(pert_cost, 2)}, but matched all", file=f)
-                        else:
-                            print(f"Already matched", file=f)
+                    not_yet_visited = sol_idx not in found_solutions
+                    if not_yet_visited:
+                        found_solutions.add(sol_idx)
+                        if matched_all_stops and pert_cost < curr_min_cost:
+                            print(f"IMPROVEMENT", file=f)
+                            print_path_mark_stops(perturbated_solution, visiting_stops, f)
+                            print(get_matched_stops(perturbated_solution, visiting_stops), file=f)
+                            print(f"cost = {round(pert_cost, 2)}", file=f)
+                            curr_min = perturbated_solution
+                            curr_min_cost = pert_cost
+                        elif matched_all_stops:
+                            print(f"NOT IMPROVEMENT of {round(pert_cost, 2)}, but matched all", file=f)
+                    else:
+                        print(f"Already matched", file=f)
                 prev_best_sol = solution
-                print(f"Current solution = {get_matched_connections(solution, visiting_stops)}")
                 solution = curr_min
             if solution == prev_best_sol:
                 break

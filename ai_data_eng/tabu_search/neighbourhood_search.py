@@ -37,6 +37,8 @@ def insert_conn_between(g: Graph, criterion: OptimizationType):
         solution = connections[:m] + (conn_s_f_e_t(connections[m], connections[i]) if is_not_loop(connections[m], connections[i]) else [])
         solution += conn_e_f_e_t(solution[-1], connections[k]) if is_not_loop(solution[-1], connections[k]) else []
         solution += conn_e_f_e_t(solution[-1], connections[j]) if is_not_loop(solution[-1], connections[j]) else []
+        if connections[j + 1:] and solution[-1].end_stop != connections[j + 1].start_stop:
+            solution += conn_e_f_e_t(solution[-1], connections[j])
         prev_conn = solution[-1]
         for conn in connections[j + 1:]:
             assert prev_conn.end_stop == conn.start_stop, f"{prev_conn} does not connect with {conn}"
