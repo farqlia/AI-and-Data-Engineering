@@ -5,9 +5,9 @@ from typing import Callable
 from ai_data_eng.searching.a_star_p.initialization import initialize_queue_with_prev_conn, initialize_queue
 from ai_data_eng.searching.globals import A_STAR_RUNS_P
 from ai_data_eng.searching.graph import *
-from ai_data_eng.searching.heuristics import Heuristic
+from ai_data_eng.searching.heuristics import Heuristic, ChangeHeuristic
 from ai_data_eng.searching.searchning import PrioritizedItem, run_solution, \
-    print_path, write_solution_to_file
+    print_path, write_solution_to_file, OptimizationType
 from ai_data_eng.searching.utils import *
 
 
@@ -98,6 +98,16 @@ def a_star_changes_opt(start_stop: str, goal_stop: str, leave_hour: str,
         print(f'Algorithm took {elapsed_time:.2f}s to execute\n', file=f)
         write_solution_to_file(run_dir / 'summary', connections, leave_hour, elapsed_time, costs[goal], change_time)
     return graph, connections
+
+
+def a_star_p_solution(start_stop: str, goal_stop: str, leave_hour: str):
+    graph, goal, came_from, costs, elapsed_time = run_solution(
+        partial(find_path_a_star_p, heuristic=ChangeHeuristic()),
+        start_stop, goal_stop, leave_hour, 0, criterion=OptimizationType.CHANGES)
+    came_from_conn, stop_conn = came_from
+    conns = path_to_list_p(goal, came_from_conn, stop_conn)
+    connections = [graph.conn_at_index(idx) for idx in conns]
+    return connections, costs[goal], elapsed_time
 
 
 def a_star_changes_opt_light(start_stop: str, goal_stop: str, leave_hour: str,

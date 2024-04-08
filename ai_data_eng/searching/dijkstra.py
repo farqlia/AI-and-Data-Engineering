@@ -1,7 +1,7 @@
 from typing import Callable
 
 import pandas as pd
-from ai_data_eng.searching.initialization import initialize_queue
+from ai_data_eng.searching.a_star_t.initialization import initialize_queue
 
 from ai_data_eng.searching.globals import DIJKSTRA
 from ai_data_eng.searching.graph import Graph
@@ -16,7 +16,7 @@ def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callab
                        leave_hour: str):
     dep_time = time_to_normalized_sec(leave_hour)
 
-    cost_so_far = {}
+    cost_so_far = {start_stop : 0}
     # if commuting A -> B, then this will be came_from_conn[B] = A so we can recreate the path
     came_from_conn = {}
     stop_conn = {}
@@ -24,6 +24,8 @@ def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callab
     closest_set = {start_stop}
 
     frontier = initialize_queue(graph, cost_so_far, came_from_conn, stop_conn, start_stop, dep_time)
+
+    frontier.put(PrioritizedItem(cost_so_far[start_stop], start_stop))
 
     while not frontier.empty():
         # get the stop with the lowest cost
@@ -52,6 +54,16 @@ def find_path_dijkstra(graph: Graph, cost_func: Callable, neighbours_gen: Callab
     return goal_stop_index, came_from_conn, cost_so_far
 
 
+def dijkstra_solution(start_stop: str, goal_stop: str, leave_hour: str):
+    graph, goal_index, came_from, costs, elapsed_time = run_solution(find_path_dijkstra, start_stop, goal_stop,
+                                                                     leave_hour, 0, OptimizationType.TIME)
+
+    connections = idxs_to_nodes(graph, goal_index, came_from)
+    assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, goal_stop, connections)
+    solution_cost = costs[graph.conn_at_index(goal_index).end_stop]
+    return connections, solution_cost, elapsed_time
+
+
 def dijkstra(start_stop: str, goal_stop: str, leave_hour: str, change_time: int):
     with open(DIJKSTRA / f'run-change_time-{change_time}', mode='a', encoding='utf-8') as f:
         print(f'Testcase: {start_stop} -> {goal_stop}\nStart time: {leave_hour}\nRoute', file=f)
@@ -59,7 +71,7 @@ def dijkstra(start_stop: str, goal_stop: str, leave_hour: str, change_time: int)
                                                                          leave_hour, change_time, OptimizationType.TIME)
 
         connections = idxs_to_nodes(graph, goal_index, came_from)
-        assert assert_connection_path(time_to_normalized_sec(leave_hour), connections)
+        assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, goal_stop, connections)
         print_path(connections, f)
         solution_cost = costs[graph.conn_at_index(goal_index).end_stop]
         write_solution_to_file(DIJKSTRA / 'summary', connections, leave_hour, elapsed_time, solution_cost, change_time)

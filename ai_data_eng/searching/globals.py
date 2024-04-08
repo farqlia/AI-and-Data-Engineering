@@ -5,11 +5,11 @@ from typing import Tuple
 Stop = Tuple[str, float, float]
 UPPER_BOUND_CONN_TIME = 240.0
 
-DEBUG = False
+DEBUG = True
 
 DATA_DIR = Path('../data')
 if DEBUG:
-    RESULTS = DATA_DIR / 'improved-heuristic'
+    RESULTS = DATA_DIR / 'debug'
 else:
     RESULTS = DATA_DIR / 'results'
 os.makedirs(RESULTS, exist_ok=True)

@@ -6,9 +6,9 @@ import pandas as pd
 from ai_data_eng.searching.a_star_t.initialization import initialize_queue, initialize_queue_with_prev_conn
 from ai_data_eng.searching.globals import A_STAR_RUNS_T
 from ai_data_eng.searching.graph import Graph
-from ai_data_eng.searching.heuristics import Heuristic
+from ai_data_eng.searching.heuristics import Heuristic, WeightedAverageTimeHeuristic
 from ai_data_eng.searching.searchning import run_solution, assert_connection_path, idxs_to_nodes, \
-    print_path, PrioritizedItem, write_solution_to_file
+    print_path, PrioritizedItem, write_solution_to_file, OptimizationType
 from ai_data_eng.searching.utils import time_to_normalized_sec, sec_to_time
 
 pd.options.mode.chained_assignment = None
@@ -68,8 +68,8 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 frontier.put(PrioritizedItem(approx_goal_cost, next_conn.end_stop))
                 came_from_conn[next_conn.Index] = conn.name
                 stop_conn[next_conn.end_stop] = next_conn.Index
-        closest_set.add(current)
-        graph.exclude_stop(current)
+        # closest_set.add(current)
+        # graph.exclude_stop(current)
 
     graph.reset()
     return goal_stop_index, came_from_conn, cost_so_far
@@ -90,6 +90,16 @@ def a_star_time_opt(start_stop: str, goal_stop: str, leave_hour: str, heuristic:
         write_solution_to_file(A_STAR_RUNS_T / 'summary', connections, leave_hour, elapsed_time, solution_cost,
                                change_time)
     return graph, connections
+
+
+def a_star_t_solution(start_stop: str, goal_stop: str, leave_hour: str):
+    graph, goal_index, came_from, costs, elapsed_time = run_solution(
+        partial(find_path_a_star_t, heuristic=WeightedAverageTimeHeuristic()),
+        start_stop, goal_stop, leave_hour, 0, OptimizationType.TIME)
+    connections = idxs_to_nodes(graph, goal_index, came_from)
+    assert_connection_path(time_to_normalized_sec(leave_hour), start_stop, goal_stop, connections)
+    solution_cost = costs[graph.conn_at_index(goal_index).end_stop]
+    return connections, solution_cost, elapsed_time
 
 
 def a_star_time_opt_light(start_stop: str, goal_stop: str, leave_hour: str, heuristic: Heuristic, change_time,
