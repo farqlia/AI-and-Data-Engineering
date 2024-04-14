@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from ai_data_eng.searching.globals import DATA_DIR
-from ai_data_eng.searching.graph import Graph, add_constant_change_time, is_changing, add_const_change_time, \
+from ai_data_eng.searching.graph import Graph, is_changing, add_const_change_time, \
     is_conn_change
 from ai_data_eng.searching.heuristics import MaxVelocityTimeHeuristic
 from ai_data_eng.searching.utils import time_to_normalized_sec
@@ -27,11 +27,6 @@ def test_get_neighbour_stops(g):
     g.add_conn('19:52:00', g.get_possible_stops('Zabrodzie - pętla').iloc[1], -3)
     print(g.get_neighbour_stops(g.rename_stop(g.conn_at_index(-3))))
 
-
-def test_departure_time(g):
-    dep_time = time_to_normalized_sec('08:02:00')
-    g.add_conn(dep_time, g.rename_stop(g.conn_at_index(64785)), -1)
-    print(add_constant_change_time(g.conn_graph.loc[71820:71821], g.conn_at_index(-1)))
 
 
 def test_null(g):
@@ -121,7 +116,7 @@ def test_add_change_conn_time(g):
 
 
 def test_get_earliest_line_cont(g):
-    print(g.get_earliest_from_with_and_without_change(g.conn_graph.loc[14557]))
+    print(g.get_earliest_from(g.conn_graph.loc[14557]))
 
 
 def test_possible_stop_names(g):

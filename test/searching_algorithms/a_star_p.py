@@ -15,7 +15,7 @@ connection_graph = pd.read_csv(DATA_DIR / 'connection_graph.csv',
                                         'end_stop_lon'])
 g = Graph(connection_graph, add_constant_change_time)
 goal, (came_from_conn, stop_conn), cost_so_far = find_path_a_star_p(g, ChangeHeuristic(), g.change_cost_between_conns,
-                                                                    g.get_lines_from, start_stop, goal_stop, leave_hour)
+                                                                    g.get_earliest_lines_from, start_stop, goal_stop, leave_hour)
 end = timer()
 
 print(goal)

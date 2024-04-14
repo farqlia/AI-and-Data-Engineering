@@ -89,7 +89,7 @@ class Graph:
         n_df = self.get_neighbour_stops(stop)
         return [self.stop_as_tuple(s) for (i, s) in n_df.iterrows()]
 
-    def get_lines_from(self, prev_conn: pd.Series):
+    def get_earliest_lines_from(self, prev_conn: pd.Series):
         possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == prev_conn.end_stop)]
         time_arrv_diff = diff(possible_conns['arrival_sec'], prev_conn.arrival_sec)
         time_dep_diff = diff(possible_conns['departure_sec'],
@@ -112,28 +112,6 @@ class Graph:
         lines, stops = list(zip(*exclude_stops_and_lines))
         return ~self.conn_graph['end_stop'].isin(stops) & ~self.conn_graph['line'].isin(lines)
 
-    # TODO: try to change the following things:
-    # 1. Try to first group by and then take minimum by the valid time arrival diff
-    # 2. Try to parametrize line so that connection with and without changing is returned
-    def get_earliest_from(self, dep_time: int, start_stop: Stop, line: str = None, exclude_stops: Set = None):
-        '''Returns all earliest connections to all neighbouring stops'''
-        possible_conns = self.conn_graph[(self.conn_graph['start_stop'] == start_stop[0]) & self.is_line_valid()
-                                         & self.end_stop_not_in(exclude_stops)]
-
-        time_arrv_diff = diff(possible_conns['arrival_sec'], dep_time)
-        time_dep_diff = diff(possible_conns['departure_sec'],
-                             self.change_time_compute(conns=possible_conns, stop=start_stop,
-                                                      dep_time=dep_time, line=line))
-
-        differences = (time_arrv_diff - time_dep_diff) >= 0
-        valid_time_arrv_diff = time_arrv_diff[differences].sort_values()
-
-        first_conns = ((possible_conns.loc[valid_time_arrv_diff.index]
-        .groupby(
-            ['start_stop', 'end_stop', 'start_stop_lat', 'start_stop_lon', 'end_stop_lat', 'end_stop_lon']))
-                       .head(1))
-
-        return first_conns
 
     def get_earliest_from_to(self, from_conn, to_conn):
         possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == from_conn.end_stop)
@@ -176,7 +154,7 @@ class Graph:
 
         return first_conns
 
-    def get_earliest_from_with_and_without_change(self, prev_conn: pd.Series):
+    def get_earliest_from(self, prev_conn: pd.Series):
         possible_conns = self.computation_cg[(self.computation_cg['start_stop'] == prev_conn.end_stop)]
         time_arrv_diff = diff(possible_conns['arrival_sec'], prev_conn.arrival_sec)
         time_dep_diff = diff(possible_conns['departure_sec'],
@@ -247,10 +225,3 @@ def add_const_change_time(conns, prev_conn, change_time=60):
         dept_times[is_change] = (dept_times[is_change] + change_time) % (24 * 3600)
     return dept_times
 
-
-def add_constant_change_time(conns, stop: Stop, dep_time: int, line: str = None, change_time=60):
-    dept_times = pd.Series(data=dep_time, index=conns.index)
-    if line != '':
-        is_change = is_changing(conns, stop, line, dep_time)
-        dept_times.loc[is_change] = (dept_times.loc[is_change] + change_time) % (24 * 3600)
-    return dept_times

@@ -13,6 +13,7 @@ from ai_data_eng.searching.utils import *
 
 def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                        neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str, prev_conn_idx=None):
+    heuristic.init_graph(graph)
     dep_time = time_to_normalized_sec(leave_hour)
     # print_info = a_star_print_info(lambda x: round(x, 2))
     cost_so_far = {}
@@ -62,9 +63,7 @@ def find_path_a_star_p(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 came_from_conn[(next_conn.line, next_conn.end_stop)] = (line, current)
                 stop_conn[(next_conn.line, next_conn.end_stop)] = next_conn.Index
         # i += 1
-        graph.exclude_stop_and_line(current, line)
 
-    graph.reset()
     return goal, (came_from_conn, stop_conn), cost_so_far
 
 
@@ -118,4 +117,4 @@ def a_star_changes_opt_light(start_stop: str, goal_stop: str, leave_hour: str,
     came_from_conn, stop_conn = came_from
     conns = path_to_list_p(goal, came_from_conn, stop_conn)
     connections = [graph.conn_at_index(idx) for idx in conns]
-    return graph, connections
+    return connections, costs[goal], elapsed_time

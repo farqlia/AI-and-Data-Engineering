@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from ai_data_eng.searching.graph import Stop
+from ai_data_eng.searching.graph import Stop, Graph
 from ai_data_eng.searching.searchning import OptimizationType, TIME_AND_CHANGE_HEURISTIC
 from ai_data_eng.searching.utils import distance_m, diff, rename_stop, stop_as_tuple
 
@@ -18,8 +18,7 @@ class Heuristic(ABC):
                 cost: int = None) -> int:
         return -1
 
-    @abstractmethod
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
+    def init_graph(self, graph: Graph):
         pass
 
 
@@ -32,8 +31,6 @@ class MockHeuristic(Heuristic):
                 cost: int = None) -> int:
         return 0
 
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
-        pass
 
 
 class MaxVelocityTimeHeuristic(Heuristic):
@@ -49,10 +46,6 @@ class MaxVelocityTimeHeuristic(Heuristic):
             self.max_vel = max(self.max_vel,
                                distance_m(stop_from, stop_to) / diff(next_conn.arrival_sec, next_conn.departure_sec))
         return distance_m(goal_stop, stop_to) / self.max_vel
-
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
-        return (distance_m(goal_stop, start_stop) / self.max_vel) <= actual_time
-
 
 class WeightedAverageTimeHeuristic(Heuristic):
 
@@ -82,18 +75,19 @@ class WeightedAverageTimeHeuristic(Heuristic):
         heuristic_time = prev_dist / self.velocity
         return (heuristic_time - cost) / cost > self.epsilon
 
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
-        pass
-
 
 class TimeAndChangeHeuristic(Heuristic):
 
-    def __init__(self):
+    def __init__(self, a=None, b=None):
         super().__init__(OptimizationType.TIME_AND_CHANGES)
-        self.a = TIME_AND_CHANGE_HEURISTIC['a']
-        self.b = TIME_AND_CHANGE_HEURISTIC['b']
+        self.a = a if a else TIME_AND_CHANGE_HEURISTIC['a']
+        self.b = b if b else TIME_AND_CHANGE_HEURISTIC['b']
         self.time_heurists = WeightedAverageTimeHeuristic()
         self.change_heuristic = ChangeHeuristic()
+
+    def init_graph(self, graph: Graph):
+        graph.a = self.a
+        graph.b = self.b
 
     def compute(self, start_stop: Stop, goal_stop: Stop,
                 prev_conn, next_conn, cost: int = None) -> int:
@@ -101,9 +95,6 @@ class TimeAndChangeHeuristic(Heuristic):
                                                    cost) + self.b * self.change_heuristic.compute(start_stop, goal_stop,
                                                                                                   prev_conn, next_conn,
                                                                                                   cost)
-
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
-        pass
 
 
 class ChangeHeuristic(Heuristic):
@@ -125,5 +116,5 @@ class ChangeHeuristic(Heuristic):
         heuristic_cost += distance_m(stop_to, goal_stop) / distance_m(start_stop, goal_stop) * max(cost, self.N)
         return heuristic_cost
 
-    def check(self, start_stop: Stop, goal_stop: Stop, actual_time: int):
+    def init_graph(self, graph: Graph):
         pass

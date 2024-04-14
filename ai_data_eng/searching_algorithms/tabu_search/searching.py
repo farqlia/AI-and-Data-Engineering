@@ -14,10 +14,10 @@ def get_a_star(g: Graph):
         if criterion == OptimizationType.TIME:
             return partial(find_path_a_star_t, graph=g, heuristic=WeightedAverageTimeHeuristic(),
                            cost_func=g.time_cost_between_conns,
-                           neighbours_gen=g.get_earliest_from_with_and_without_change)
+                           neighbours_gen=g.get_earliest_from)
         elif criterion == OptimizationType.CHANGES:
             return partial(find_path_a_star_p, graph=g, heuristic=ChangeHeuristic(),
-                           cost_func=g.change_cost_between_conns, neighbours_gen=g.get_lines_from)
+                           cost_func=g.change_cost_between_conns, neighbours_gen=g.get_earliest_lines_from)
 
     return get_a_star_for_graph
 

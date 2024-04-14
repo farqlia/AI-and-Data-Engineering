@@ -16,6 +16,7 @@ pd.options.mode.chained_assignment = None
 
 def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                        neighbours_gen: Callable, start_stop: str, goal_stop: str, leave_hour: str, prev_conn_idx=None):
+    heuristic.init_graph(graph)
     dep_time = time_to_normalized_sec(leave_hour)
 
     # print_info = a_star_print_info(sec_to_time)
@@ -68,8 +69,6 @@ def find_path_a_star_t(graph: Graph, heuristic: Heuristic, cost_func: Callable,
                 frontier.put(PrioritizedItem(approx_goal_cost, next_conn.end_stop))
                 came_from_conn[next_conn.Index] = conn.name
                 stop_conn[next_conn.end_stop] = next_conn.Index
-        # closest_set.add(current)
-        # graph.exclude_stop(current)
 
     graph.reset()
     return goal_stop_index, came_from_conn, cost_so_far

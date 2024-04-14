@@ -118,13 +118,11 @@ def get_cost_func(graph: Graph, criterion: OptimizationType):
     elif criterion == OptimizationType.CHANGES:
         return graph.change_cost_between_conns
     else:
-        graph.a = TIME_AND_CHANGE_HEURISTIC['a']
-        graph.b = TIME_AND_CHANGE_HEURISTIC['b']
         return graph.averaged_cost
 
 
 def get_neighbours_gen(graph: Graph, criterion: OptimizationType):
-    return graph.get_earliest_from_with_and_without_change if criterion == OptimizationType.TIME else graph.get_lines_from
+    return graph.get_earliest_from if criterion == OptimizationType.TIME else graph.get_earliest_lines_from
 
 
 def run_solution(find_path_function, start_stop: str, goal_stop: str, leave_hour: str, change_time,
