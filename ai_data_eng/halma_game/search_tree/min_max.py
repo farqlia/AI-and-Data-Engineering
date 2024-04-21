@@ -56,11 +56,13 @@ class MinMax(SearchAlgorithm):
 
         # take max over children
         if game_repr.moving_player() == player.repr():
-            max_value = 0
+            max_value = -sys.maxsize + 1
             for (field_from, field_to) in generate_candidate_moves(game_repr, player):
                 game_repr.move(field_from, field_to)
+                logging.debug(f"Move {field_from} -> {field_to}")
                 if to_be_visited(game_repr.get_board(), already_visited):
                     value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                    logging.debug(f"Value at {field_from} -> {field_to} is {value}")
                     if value > max_value:
                         max_value = value
                         self.best_move = field_from, field_to

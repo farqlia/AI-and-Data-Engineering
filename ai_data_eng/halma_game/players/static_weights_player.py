@@ -1,6 +1,6 @@
 from typing import Union
 
-from ai_data_eng.halma_game.globals import Move
+from ai_data_eng.halma_game.globals import Move, PLAYER
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 
@@ -26,4 +26,5 @@ class StaticWeightsPlayer(Player):
                 self.weights[j][15 - j + i] = weight
 
     def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
-        return sum(self.weights[field[0]][field[1]] for field in self.get_occupied_fields(game_repr))
+        return (-1 if self.flag == PLAYER.BLACK else 1) * sum(self.weights[field[0]][field[1]]
+                                                              for field in self.get_occupied_fields(game_repr))

@@ -32,4 +32,5 @@ class GamePlaying:
             logging.debug(f"Player {curr_player} move : {next_move[0]} -> {next_move[1]}")
         else:
             logging.warning(f"Player {curr_player} move was invalid")
+        logging.debug(f"Player {curr_player} tree depth is {player.game_search_depth()}")
         return next_move

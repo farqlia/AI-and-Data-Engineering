@@ -20,5 +20,6 @@ class SearchAlgorithm(ABC):
         return size
 
     def search(self, game_repr: GameRepresentation, player) -> Move:
+        self.tree_size = 0
         return self._search(game_repr, player)
 

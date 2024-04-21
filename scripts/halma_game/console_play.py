@@ -16,7 +16,7 @@ def main():
     engine = Engine()
     game_repr = GameState(engine)
     player1 = ConsolePlayer(PLAYER.BLACK, search_alg=None)
-    player2 = StaticWeightsPlayer(plr=PLAYER.WHITE, search_alg=MinMax(20))
+    player2 = StaticWeightsPlayer(plr=PLAYER.WHITE, search_alg=MinMax(200))
     game_adapter = GameUiAdapter(game_repr, player1, player2)
     game_adapter.setup()
     halma_gui = HalmaGUI(root, game_adapter)
