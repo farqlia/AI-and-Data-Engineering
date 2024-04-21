@@ -1,16 +1,29 @@
-from ai_data_eng.halma_game.engine import *
+import tkinter as tk
 from ai_data_eng.halma_game.game import *
-from ai_data_eng.halma_game.gameui import *
 from ai_data_eng.halma_game.globals import *
-from ai_data_eng.halma_game.player import *
+
+from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.gamestate import GameState
+from ai_data_eng.halma_game.players.console_player import ConsolePlayer
+from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
+from ai_data_eng.halma_game.search_tree.min_max import MinMax
+from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
+from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
+
+
+def main():
+    root = tk.Tk()
+    engine = Engine()
+    game_repr = GameState(engine)
+    player1 = ConsolePlayer(PLAYER.BLACK, search_alg=None)
+    player2 = StaticWeightsPlayer(plr=PLAYER.WHITE, search_alg=MinMax(20))
+    game_adapter = GameUiAdapter(game_repr, player1, player2)
+    game_adapter.setup()
+    halma_gui = HalmaGUI(root, game_adapter)
+    halma_gui.update_ui()
+
+    root.mainloop()
+
 
 if __name__ == "__main__":
-    engine = Engine()
-    game_ui = GameUI(engine)
-
-    print("Game starts")
-    game_ui.print_board()
-    print(f"Current player {engine.moving_player}")
-    result = game_ui.move((1, 4), (2, 4))
-    print(result)
-    game_ui.print_board()
+    main()

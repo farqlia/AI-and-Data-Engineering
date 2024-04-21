@@ -1,27 +1,32 @@
-from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP
+from typing import Union, List
+
+from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP, Field, Board, Move
 import logging
 
-class GameUI:
+from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 
-    def __init__(self, engine):
+
+class GameState(GameRepresentation):
+
+    def __init__(self, engine: Engine):
         """! Konstruktor klasy GameInterface.
 
         @param engine Obiekt klasy Engine.
         """
         self._engine = engine
 
-    def get_board(self):
+    def setup(self):
+        pass
+
+    def get_board(self) -> Board:
         """! Zwraca planszę do gry.
 
         @return Plansza do gry.
         """
         return self._engine.get_board()
 
-    def setup(self):
-        """! Ustawia grę w żądanym stanie. """
-        self._engine.setup()
-
-    def current_move(self):
+    def round_number(self) -> int:
         """! Zwraca numer obecnego ruchu.
 
         @return Numer ruchu.
@@ -35,6 +40,7 @@ class GameUI:
         """
         return self._engine.moving_player
 
+    # TODO: consider if the move should really be validated here
     def _validate_move(self, field1, field2):
         """! Sprawdza, czy obecnie ruszający się gracz może wykonać taki ruch.
 
@@ -60,7 +66,7 @@ class GameUI:
         # da się wykonać ruch tam gdzie chcemy.
         possible_moves = self._engine.moves(*field1)
         logging.debug(f"Possible moves: {possible_moves}")
-        if field2 not in self._engine.moves(*field1):
+        if field2 not in possible_moves:
             return False
 
         return True
@@ -86,7 +92,10 @@ class GameUI:
             self._engine.moving_player = PLAYER.WHITE
             self._engine.move += 1
 
-    def move(self, field_from, field_to):
+    def possible_moves(self, field_from: Field) -> List[Field]:
+        return self._engine.moves(*field_from)
+
+    def move(self, field_from: Field, field_to: Field) -> Union[Move, None]:
         """! Funkcja wykonująca ruch.
 
         @param move_str Zapis ruchu.
@@ -147,7 +156,7 @@ class GameUI:
         if all_full:
             return PLAYER.BLACK
 
-    def get_winner(self):
+    def get_winner(self) -> Union[PLAYER, None]:
         """! Sprawdza, czy jest koniec gry.
 
         Zwraca zwycięzcę w typie wyliczeniowym
@@ -165,12 +174,3 @@ class GameUI:
             return black_player
 
         return None
-
-    def print_board(self):
-        board = self._engine.get_board()
-        print("   ", " ".join([f"{n:02}" for n in range(16)]))
-        print("----------------------------------------------------")
-        for i in range(16):
-            print(f"{i:02}", "|", "  ".join([str(board[i][j].value) for j in range(16)]), "|", f"{i:02}")
-        print("----------------------------------------------------")
-        print("   ", " ".join([f"{n:02}" for n in range(16)]))

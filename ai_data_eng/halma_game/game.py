@@ -1,12 +1,35 @@
-from ai_data_eng.halma_game.globals import STATE
-from ai_data_eng.halma_game.engine import Engine
+from ai_data_eng.halma_game.globals import Move
+from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
+from ai_data_eng.halma_game.players.player import Player
+import logging
+import ai_data_eng.halma_game.utils
 
 
-class Game:
+class GamePlaying:
 
-    def __init__(self, engine, player_1, player_2):
+    def __init__(self, game_repr: GameRepresentation,
+                 player1: Player, player2: Player):
 
-        self._engine = engine
-        self._player_1 = player_1
-        self._player_2 = player_2
+        self.game_repr = game_repr
+        self._player_1: Player = player1
+        self._player_2: Player = player2
 
+    def next(self) -> Move:
+        logging.info(f"Player {self.game_repr.moving_player()} turn")
+        if self.game_repr.moving_player() == self._player_1.flag:
+            return self.apply_player_move(self._player_1)
+        else:
+            return self.apply_player_move(self._player_2)
+
+    def apply_player_move(self, player: Player):
+        '''
+        Apply current player move and return it, plus some metadata info
+        '''
+        next_move = player.make_move(self.game_repr)
+        curr_player = self.game_repr.moving_player()
+        if next_move:
+            self.game_repr.move(*next_move)
+            logging.debug(f"Player {curr_player} move : {next_move[0]} -> {next_move[1]}")
+        else:
+            logging.warning(f"Player {curr_player} move was invalid")
+        return next_move

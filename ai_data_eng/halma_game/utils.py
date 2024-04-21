@@ -1,6 +1,8 @@
 import logging
 import sys
 
+from ai_data_eng.halma_game.globals import Board
+
 
 def configure_logging(minimal_level=logging.DEBUG):
     logging_format = '%(levelname)s: %(asctime)s - %(message)s'
@@ -27,5 +29,18 @@ def filter_maker(level):
         return record.levelno <= level
 
     return filter_log
+
+
+def print_board(board):
+    print("   ", " ".join([f"{n:02}" for n in range(16)]))
+    print("----------------------------------------------------")
+    for i in range(16):
+        print(f"{i:02}", "|", "  ".join([str(board[i][j]) for j in range(16)]), "|", f"{i:02}")
+    print("----------------------------------------------------")
+    print("   ", " ".join([f"{n:02}" for n in range(16)]))
+
+
+def concat_board_state(board: Board) -> str:
+    return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
 
 configure_logging(logging.DEBUG)

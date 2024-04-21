@@ -1,10 +1,10 @@
-from ai_data_eng.halma_game.globals import STATE, PLAYER
+from ai_data_eng.halma_game.globals import STATE, PLAYER, Board
 
 
 class Engine:
 
     def __init__(self):
-        self._board = [[STATE.EMPTY] * 16 for _ in range(16)]
+        self._board: Board = [[STATE.EMPTY] * 16 for _ in range(16)]
         self.moving_player = PLAYER.BLACK
         self.move = 0
         self._set_up()
@@ -73,6 +73,7 @@ class Engine:
         @param visited Odwiedzone pola.
 
         @return Pola na które można się ruszyć.
+        TODO: IMPLEMENT THIS WITH USE OF QUEUE
         """
         delta_y = [-1, 0, 1, 1, 1, 0, -1, -1]
         delta_x = [1, 1, 1, 0, -1, -1, -1, 0]  # noqa: E201
@@ -142,3 +143,4 @@ class Engine:
             raise ValueError('Corrupted data.')
 
         return value
+
