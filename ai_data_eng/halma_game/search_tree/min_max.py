@@ -1,7 +1,7 @@
 import copy
 import logging
 import sys
-from typing import Set
+from typing import Set, Union, Tuple
 
 import numpy as np
 
@@ -36,9 +36,11 @@ class MinMax(SearchAlgorithm):
     def __init__(self, search_depth):
         super().__init__(search_depth)
         self.best_move = None
+        self.visited_states = set()
 
     def _search(self, game_repr: GameRepresentation, player: Player) -> Move:
-        self.minmax_search(game_repr, player, 0, set())
+        self.minmax_search(game_repr, player, 0, set(self.visited_states))
+        self.visited_states.add(concat_board_state(game_repr.get_board()))
         best_move = self.best_move
         self.best_move = None
         return best_move

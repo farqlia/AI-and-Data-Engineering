@@ -49,7 +49,7 @@ class GameUiAdapter:
     def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int):
         with open(self.save_dir / str(player), mode='a') as f:
             from_, to = move
-            f.write(f"{from_[0],from_[1]};{to[0],to[1]};{time:.2f},{tree_size}")
+            f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f},{tree_size}\n")
 
     def get_board(self) -> Board:
         return self.game_repr.get_board()

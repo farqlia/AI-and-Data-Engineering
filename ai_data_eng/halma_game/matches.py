@@ -22,9 +22,26 @@ strategy_player = {
 def play_human_minmax_match(strategy_white: STRATEGY, depth: int):
     engine = Engine()
     game_repr = GameState(engine)
-    match_dir = HALMA_DIR / f'human_minmax_match-{datetime.datetime.strftime("%d-%H%M")}'
+    match_dir = HALMA_DIR / f'human_minmax_match-{datetime.datetime.today().strftime("%d-%H%M")}'
     os.makedirs(match_dir)
     player_black = ConsolePlayer(PLAYER.BLACK, None)
+    player_white = strategy_player[strategy_white](PLAYER.WHITE, MinMax(depth))
+    game_adapter = GameUiAdapter(game_repr, player_black, player_white,
+                                 match_dir)
+    game_adapter.setup()
+    root = tk.Tk()
+    halma_gui = HalmaGUI(root, game_adapter)
+    halma_gui.update_ui()
+
+    root.mainloop()
+
+
+def play_minmax_minmax_match(strategy_black: STRATEGY, strategy_white: STRATEGY, depth: int):
+    engine = Engine()
+    game_repr = GameState(engine)
+    match_dir = HALMA_DIR / f'human_minmax_minmax-{datetime.datetime.today().strftime("%d-%H%M")}'
+    os.makedirs(match_dir)
+    player_black = strategy_player[strategy_black](PLAYER.BLACK, MinMax(depth))
     player_white = strategy_player[strategy_white](PLAYER.WHITE, MinMax(depth))
     game_adapter = GameUiAdapter(game_repr, player_black, player_white,
                                  match_dir)

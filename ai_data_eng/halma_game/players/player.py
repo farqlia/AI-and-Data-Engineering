@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Tuple
 
 from ai_data_eng.halma_game.globals import PLAYER, Field, Move, HALMA_DIR
 from abc import ABC, abstractmethod

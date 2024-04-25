@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union, Tuple
 
 from ai_data_eng.halma_game.globals import Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation

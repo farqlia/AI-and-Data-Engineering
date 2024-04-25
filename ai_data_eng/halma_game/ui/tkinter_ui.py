@@ -1,6 +1,8 @@
 import logging
+import time
 import tkinter as tk
 from tkinter import messagebox
+import threading
 
 from ai_data_eng.halma_game.globals import PLAYER, STATE
 from ai_data_eng.halma_game.logic.engine import Engine
@@ -33,12 +35,26 @@ class HalmaGUI:
         pass
 
     def navigate_forward(self):
-        self.game_adapter.next()
+        self.play_round()
+        self.forward_gui()
+
+    def forward_gui(self):
         self.update_ui()
-        self.winner = self.game_adapter.is_finished()
         if self.winner:
             logging.info("Match is finished")
             messagebox.showinfo("Information", f"The winner is {self.winner}")
+
+    def play_round(self):
+        self.game_adapter.next()
+        self.winner = self.game_adapter.is_finished()
+
+    def play_automatically(self):
+        while self.winner is None:
+            t = threading.Thread(target=self.play_round)
+            t.start()
+            t.join()
+            self.forward_gui()
+
 
     # Also print all necessary information
     def update_ui(self):
@@ -96,10 +112,12 @@ class HalmaGUI:
         l_r = 18
         self.draw_camps()
         self.back_button = tk.Button(self.master, text="Back", command=self.navigate_back)
-        self.back_button.grid(row=l_r, column=1, columnspan=2)
+        self.back_button.grid(row=l_r, column=1, columnspan=1)
         # self.back_button.pack(side=tk.LEFT, padx=5)
-        self.forward_button = tk.Button(self.master, text="Forward", command=self.navigate_forward)
-        self.forward_button.grid(row=l_r, column=3, columnspan=3)
+        self.forward_button = tk.Button(self.master, text="Next", command=self.navigate_forward)
+        self.forward_button.grid(row=l_r, column=2, columnspan=1)
+        self.forward_button = tk.Button(self.master, text="Play", command=self.play_automatically)
+        self.forward_button.grid(row=l_r, column=3, columnspan=1)
         # self.forward_button.pack(side=tk.LEFT, padx=5)
         self.player_label = tk.Label(self.master, text=f"Player: {self.game_adapter.moving_player()}")
         self.player_label.grid(row=l_r, column=6, columnspan=4)
