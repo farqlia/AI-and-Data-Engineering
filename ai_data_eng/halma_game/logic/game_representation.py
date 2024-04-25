@@ -30,11 +30,15 @@ class GameRepresentation(ABC):
         pass
 
     @abstractmethod
-    def move(self, field_from: Field, field_to: Field) -> Union[Move, None]:
+    def move(self, field_from: Field, field_to: Field) -> bool:
         '''
         Tries to perform move from field_from to field_to and returns performed move or None if no move is done
         Or maybe do not validate this move?
         '''
+        pass
+
+    @abstractmethod
+    def backtrack(self):
         pass
 
     @abstractmethod
@@ -43,5 +47,16 @@ class GameRepresentation(ABC):
         Checks if the game is finished and returns the winner; otherwise, returns None
         '''
         pass
+
+    def get_occupied_fields(self, plr_flag: PLAYER):
+        fields = []
+        state_board = self.get_board()
+        for i in range(16):
+            for j in range(16):
+                if state_board[i][j].value == plr_flag.value:
+                    fields.append((i, j))
+        return fields
+
+
 
 

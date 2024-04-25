@@ -13,8 +13,10 @@ class GamePlaying:
         self.game_repr = game_repr
         self._player_1: Player = player1
         self._player_2: Player = player2
+        self.round = 0
 
     def next(self) -> Move:
+        self.round += 1
         logging.info(f"Player {self.game_repr.moving_player()} turn")
         if self.game_repr.moving_player() == self._player_1.flag:
             return self.apply_player_move(self._player_1)
@@ -32,5 +34,5 @@ class GamePlaying:
             logging.debug(f"Player {curr_player} move : {next_move[0]} -> {next_move[1]}")
         else:
             logging.warning(f"Player {curr_player} move was invalid")
-        logging.debug(f"Player {curr_player} tree depth is {player.game_search_depth()}")
+        logging.debug(f"Player {curr_player} tree depth is {player.search_tree_size()}")
         return next_move

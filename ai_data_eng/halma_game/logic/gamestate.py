@@ -15,6 +15,7 @@ class GameState(GameRepresentation):
         @param engine Obiekt klasy Engine.
         """
         self._engine = engine
+        self.prev_move_stack = []
 
     def setup(self):
         pass
@@ -65,7 +66,6 @@ class GameState(GameRepresentation):
         # Teraz należy sprawdzić, czy z danego pola
         # da się wykonać ruch tam gdzie chcemy.
         possible_moves = self._engine.moves(*field1)
-        logging.debug(f"Possible moves: {possible_moves}")
         if field2 not in possible_moves:
             return False
 
@@ -95,7 +95,7 @@ class GameState(GameRepresentation):
     def possible_moves(self, field_from: Field) -> List[Field]:
         return self._engine.moves(*field_from)
 
-    def move(self, field_from: Field, field_to: Field) -> Union[Move, None]:
+    def move(self, field_from: Field, field_to: Field) -> bool:
         """! Funkcja wykonująca ruch.
 
         @param move_str Zapis ruchu.
@@ -104,10 +104,19 @@ class GameState(GameRepresentation):
         """
 
         if not self._validate_move(field_from, field_to):
-            return None
+            return False
 
         self._apply_move(field_from, field_to)
-        return field_from, field_to
+        self.prev_move_stack.append((field_from, field_to))
+        return True
+
+    def backtrack(self):
+        field_to, field_from = self.prev_move_stack.pop()
+        on_field1 = self._engine.read_field(*field_from)
+        self._engine.set_field(*field_from, STATE.EMPTY)
+        self._engine.set_field(*field_to, on_field1)
+        self._engine.moving_player = PLAYER.WHITE if on_field1 == STATE.WHITE else PLAYER.BLACK
+        self._engine.move -= 1
 
     def in_camp(self, y, x):
         """! Sprawdza w jakim obozie znajduje się pole.

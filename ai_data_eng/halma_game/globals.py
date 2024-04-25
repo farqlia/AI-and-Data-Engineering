@@ -1,6 +1,15 @@
+import os
 from enum import Enum
 
 from typing import Tuple, List
+from pathlib import Path
+
+HALMA_DIR = Path('../data/halma')
+os.makedirs(HALMA_DIR, exist_ok=True)
+
+
+class STRATEGY(Enum):
+    STATIC_WEIGHTED = 'static weighted'
 
 
 class STATE(Enum):

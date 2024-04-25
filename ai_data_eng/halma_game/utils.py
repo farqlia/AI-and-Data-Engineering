@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from ai_data_eng.halma_game.globals import Board
+from ai_data_eng.halma_game.globals import Board, STATE
 
 
 def configure_logging(minimal_level=logging.DEBUG):
@@ -31,11 +31,14 @@ def filter_maker(level):
     return filter_log
 
 
+def cell_value(cell):
+    return cell.value if isinstance(cell, STATE) else cell
+
 def print_board(board):
     print("   ", " ".join([f"{n:02}" for n in range(16)]))
     print("----------------------------------------------------")
     for i in range(16):
-        print(f"{i:02}", "|", "  ".join([str(board[i][j]) for j in range(16)]), "|", f"{i:02}")
+        print(f"{i:02}", "|", "  ".join([str(cell_value(board[i][j])) for j in range(16)]), "|", f"{i:02}")
     print("----------------------------------------------------")
     print("   ", " ".join([f"{n:02}" for n in range(16)]))
 
@@ -43,4 +46,5 @@ def print_board(board):
 def concat_board_state(board: Board) -> str:
     return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
 
-configure_logging(logging.DEBUG)
+
+configure_logging(logging.INFO)

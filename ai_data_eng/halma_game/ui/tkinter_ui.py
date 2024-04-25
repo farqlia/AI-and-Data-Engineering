@@ -1,4 +1,6 @@
+import logging
 import tkinter as tk
+from tkinter import messagebox
 
 from ai_data_eng.halma_game.globals import PLAYER, STATE
 from ai_data_eng.halma_game.logic.engine import Engine
@@ -21,6 +23,7 @@ class HalmaGUI:
         self.bg_colors = {STATE.WHITE: "#5485A5", STATE.BLACK: "#E3A24D"}
         self.cell_colors = {STATE.WHITE: "#C2D6E3", STATE.BLACK: "#DED0BD", STATE.EMPTY: "#DBD4E2"}
         self.ui_board = None
+        self.winner = None
 
         # Create the game board
         self.create_board()
@@ -32,6 +35,10 @@ class HalmaGUI:
     def navigate_forward(self):
         self.game_adapter.next()
         self.update_ui()
+        self.winner = self.game_adapter.is_finished()
+        if self.winner:
+            logging.info("Match is finished")
+            messagebox.showinfo("Information", f"The winner is {self.winner}")
 
     # Also print all necessary information
     def update_ui(self):
@@ -41,6 +48,7 @@ class HalmaGUI:
     def update_displayed_info(self):
         self.player_label.configure(text=f"Player: {self.game_adapter.moving_player()}")
         self.round_label.configure(text=f"Round: {self.game_adapter.round_number()}")
+        self.tree_size_label.configure(text=f"TS: {self.game_adapter.player1.search_tree_size()}|{self.game_adapter.player2.search_tree_size()}")
 
     # color this according to the
     def color_cells(self, colors):
@@ -96,7 +104,9 @@ class HalmaGUI:
         self.player_label = tk.Label(self.master, text=f"Player: {self.game_adapter.moving_player()}")
         self.player_label.grid(row=l_r, column=6, columnspan=4)
         self.round_label = tk.Label(self.master, text=f"Round: {self.game_adapter.round_number()}")
-        self.round_label.grid(row=l_r, column=10, columnspan=4)
+        self.round_label.grid(row=l_r, column=10, columnspan=3)
+        self.tree_size_label = tk.Label(self.master, text=f"TS: 0")
+        self.tree_size_label.grid(row=l_r, column=13, columnspan=4)
 
     def draw_player_positions(self):
         state_board = self.game_adapter.get_board()
