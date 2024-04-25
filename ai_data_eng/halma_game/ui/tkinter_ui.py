@@ -15,8 +15,8 @@ def as_str(board, y, x):
 
 
 class HalmaGUI:
-    def __init__(self, master, game_adapter: GameUiAdapter):
-        self.master = master
+    def __init__(self, game_adapter: GameUiAdapter):
+        self.master = tk.Tk()
         self.game_adapter = game_adapter
         self.master.title("Halma Game")
         self.field_from = None
@@ -29,6 +29,10 @@ class HalmaGUI:
 
         # Create the game board
         self.create_board()
+
+    def run(self):
+        self.update_ui()
+        self.master.mainloop()
 
     # This functions should be implemented to show next game state
     def navigate_back(self):
