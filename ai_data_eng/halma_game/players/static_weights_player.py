@@ -26,6 +26,7 @@ class StaticWeightsPlayer(Player):
             for j in range(15, i - 1, -1):
                 self.weights[j][15 - j + i] = weight
 
+    # TODO:
     def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
         return (-1 if self.flag == PLAYER.WHITE else 1) * sum(self.weights[field[0]][field[1]]
                                                               for field in game_repr.get_occupied_fields(self.flag))

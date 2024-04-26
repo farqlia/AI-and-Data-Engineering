@@ -19,7 +19,8 @@ class MinMax(SearchAlgorithm):
         self.best_move = None
 
     def _search(self, game_repr: GameRepresentation, player: Player) -> Move:
-        self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
+        best_val = self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
+        logging.info(f"Best value: {best_val}")
         best_move = self.best_move
         self.best_move = None
         return best_move
