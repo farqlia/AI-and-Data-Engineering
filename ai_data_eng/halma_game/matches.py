@@ -36,14 +36,15 @@ def play_human_minmax_match(strategy_white: STRATEGY, depth: int):
     root.mainloop()
 
 
-def play_minmax_minmax_match(strategy_black: STRATEGY, strategy_white: STRATEGY, depth: int,
-                             guiInit):
+def play_minmax_minmax_match(player_black_params, player_white_params, guiInit):
     engine = Engine()
     game_repr = GameState(engine)
     match_dir = HALMA_DIR / f'human_minmax_minmax-{datetime.datetime.today().strftime("%d-%H%M")}'
     os.makedirs(match_dir)
-    player_black = strategy_player[strategy_black](PLAYER.BLACK, MinMax(depth))
-    player_white = strategy_player[strategy_white](PLAYER.WHITE, MinMax(depth))
+    player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
+                                                                    player_black_params['algorithm'](search_depth=player_black_params['search_depth']))
+    player_white = strategy_player[player_white_params['strategy']](PLAYER.WHITE,
+                                                                    player_white_params['algorithm'](search_depth=player_white_params['search_depth']))
     game_adapter = GameUiAdapter(game_repr, player_black, player_white,
                                  match_dir)
     game_adapter.setup()

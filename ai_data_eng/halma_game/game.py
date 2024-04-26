@@ -19,7 +19,7 @@ class GamePlaying:
 
     def next(self) -> Tuple[Move, float]:
         self.round += 1
-        logging.info(f"Player {self.game_repr.moving_player()} turn")
+        logging.info(f"({self.round}) Player {self.game_repr.moving_player()} turn")
         if self.game_repr.moving_player() == self._player_1.flag:
             return self.apply_player_move(self._player_1)
         else:

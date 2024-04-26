@@ -43,8 +43,14 @@ def print_board(board):
     print("   ", " ".join([f"{n:02}" for n in range(16)]))
 
 
+def hash_board(board: Board) -> int:
+    board_string = concat_board_state(board)
+    assert len(board_string) == 256
+    return hash(board_string)
+
+
 def concat_board_state(board: Board) -> str:
     return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
 
 
-configure_logging(logging.INFO)
+configure_logging(logging.DEBUG)
