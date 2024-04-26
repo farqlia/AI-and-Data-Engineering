@@ -1,7 +1,8 @@
 import logging
 import sys
+from typing import Set
 
-from ai_data_eng.halma_game.globals import Board, STATE
+from ai_data_eng.halma_game.globals import Board, STATE, CAMP, Field
 
 
 def configure_logging(minimal_level=logging.DEBUG):
@@ -43,6 +44,11 @@ def print_board(board):
     print("   ", " ".join([f"{n:02}" for n in range(16)]))
 
 
+def get_camp_boundaries(camp: CAMP) -> Set[Field]:
+    return {(15, 11), (14, 11), (13, 12), (12, 13), (11, 14), (11, 15)} if camp == CAMP.WHITE else \
+        {(4, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 4)}
+
+
 def hash_board(board: Board) -> int:
     board_string = concat_board_state(board)
     assert len(board_string) == 256
@@ -53,4 +59,4 @@ def concat_board_state(board: Board) -> str:
     return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
 
 
-configure_logging(logging.DEBUG)
+configure_logging(logging.INFO)

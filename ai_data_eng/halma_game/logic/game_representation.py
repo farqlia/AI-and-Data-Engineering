@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 
-from ai_data_eng.halma_game.globals import PLAYER, Field, Board, Move
+from ai_data_eng.halma_game.globals import PLAYER, Field, Board, Move, CAMP
 
 
 class GameRepresentation(ABC):
@@ -46,6 +46,10 @@ class GameRepresentation(ABC):
         '''
         Checks if the game is finished and returns the winner; otherwise, returns None
         '''
+        pass
+
+    @abstractmethod
+    def in_camp(self, y, x) -> CAMP:
         pass
 
     def get_occupied_fields(self, plr_flag: PLAYER):

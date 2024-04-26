@@ -9,6 +9,7 @@ from ai_data_eng.halma_game.logic.engine import Engine
 from ai_data_eng.halma_game.logic.gamestate import GameState
 from ai_data_eng.halma_game.globals import STRATEGY
 from ai_data_eng.halma_game.players.console_player import ConsolePlayer
+from ai_data_eng.halma_game.players.distance_player import DistancePlayer
 from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
 from ai_data_eng.halma_game.search_tree.min_max import MinMax
 from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
@@ -16,6 +17,8 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 
 strategy_player = {
     STRATEGY.STATIC_WEIGHTED: StaticWeightsPlayer,
+    STRATEGY.DISTANCE: DistancePlayer,
+    STRATEGY.NONE: ConsolePlayer
 }
 
 
@@ -39,7 +42,7 @@ def play_human_minmax_match(strategy_white: STRATEGY, depth: int):
 def play_minmax_minmax_match(player_black_params, player_white_params, guiInit):
     engine = Engine()
     game_repr = GameState(engine)
-    match_dir = HALMA_DIR / f'human_minmax_minmax-{datetime.datetime.today().strftime("%d-%H%M")}'
+    match_dir = HALMA_DIR / f'human_minmax_minmax-{datetime.datetime.today().strftime("%d-%H%M")}-{player_black_params["strategy"].value}-{player_white_params["strategy"].value}'
     os.makedirs(match_dir)
     player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
                                                                     player_black_params['algorithm'](search_depth=player_black_params['search_depth']))

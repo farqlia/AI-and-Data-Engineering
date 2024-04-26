@@ -8,7 +8,7 @@ from ai_data_eng.halma_game.utils import concat_board_state, hash_board
 
 class MetaSearch(SearchAlgorithm):
 
-    def __init__(self, search_depth: int, alg_init, queue_size=30):
+    def __init__(self, search_depth: int, alg_init, queue_size=10):
         super().__init__(search_depth=search_depth)
         self.alg : SearchAlgorithm = alg_init(search_depth=search_depth)
         self.queue = []
@@ -25,5 +25,5 @@ class MetaSearch(SearchAlgorithm):
         self.queue.append(board_hash)
         self.alg.forbidden_nodes.add(board_hash)
         if len(self.queue) > self.queue_size:
-            logging.info(f"Update queue")
+            logging.info(f"Remove {self.queue[0]} from queue")
             self.alg.forbidden_nodes.remove(self.queue.pop(0))

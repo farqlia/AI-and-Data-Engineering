@@ -10,6 +10,8 @@ os.makedirs(HALMA_DIR, exist_ok=True)
 
 class STRATEGY(Enum):
     STATIC_WEIGHTED = 'static weighted'
+    DISTANCE = 'distance'
+    NONE = 'none'
 
 
 class STATE(Enum):
