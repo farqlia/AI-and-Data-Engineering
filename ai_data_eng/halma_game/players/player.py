@@ -22,6 +22,9 @@ class Player(ABC):
     def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
         pass
 
+    def update_by_move(self, game_repr: GameRepresentation):
+        self.search_alg.update_by_move(game_repr)
+
     def repr(self) -> PLAYER:
         return self.flag
 

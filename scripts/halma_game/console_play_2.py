@@ -7,7 +7,7 @@ from ai_data_eng.halma_game.ui.console_ui import ConsoleUI
 from functools import partial
 
 if __name__ == "__main__":
-    player_white = {'strategy': STRATEGY.NONE, 'search_depth': 2}
+    player_white = {'strategy': STRATEGY.DISTANCE, 'search_depth': 2}
     # player_white['algorithm'] = MinMax
     player_white['algorithm'] = partial(MetaSearch, alg_init=MinMax)
     player_black = {'strategy': STRATEGY.DISTANCE, 'search_depth': 2}

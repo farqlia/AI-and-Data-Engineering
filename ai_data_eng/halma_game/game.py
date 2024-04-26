@@ -21,9 +21,12 @@ class GamePlaying:
         self.round += 1
         logging.info(f"({self.round}) Player {self.game_repr.moving_player()} turn")
         if self.game_repr.moving_player() == self._player_1.flag:
-            return self.apply_player_move(self._player_1)
+            move = self.apply_player_move(self._player_1)
         else:
-            return self.apply_player_move(self._player_2)
+            move = self.apply_player_move(self._player_2)
+        self._player_1.update_by_move(game_repr=self.game_repr)
+        self._player_2.update_by_move(game_repr=self.game_repr)
+        return move
 
     def apply_player_move(self, player: Player):
         '''

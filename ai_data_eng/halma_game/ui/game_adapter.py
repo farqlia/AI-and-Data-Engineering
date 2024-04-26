@@ -32,7 +32,7 @@ class GameUiAdapter:
         move = self.game_playing.next()
         end = timer()
         time = end - start
-        self.save_player_stats(self.game_repr.moving_player(), time, move, self.current_player.search_tree_size())
+        self.save_player_stats(self.current_player.flag, time, move, self.current_player.search_tree_size())
         return move
 
     def is_finished(self) -> Union[PLAYER, None]:
@@ -44,12 +44,12 @@ class GameUiAdapter:
 
     def save_match_stats(self, winner):
         with open(self.save_dir / 'match-stats', mode='a') as f:
-            f.write(f"{self.game_repr.round_number()},{winner}")
+            f.write(f"{self.game_repr.round_number()};{winner}")
 
     def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int):
         with open(self.save_dir / str(player), mode='a') as f:
             from_, to = move
-            f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f},{tree_size}\n")
+            f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f};{tree_size}\n")
 
     def get_board(self) -> Board:
         return self.game_repr.get_board()

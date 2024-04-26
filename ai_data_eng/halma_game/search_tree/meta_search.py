@@ -15,10 +15,12 @@ class MetaSearch(SearchAlgorithm):
         self.queue_size = queue_size
 
     def _search(self, game_repr: GameRepresentation, player) -> Move:
-        self.update_queue(game_repr.get_board())
         move = self.alg.search(game_repr, player)
         self.tree_size = self.alg.get_searched_tree_size()
         return move
+
+    def update_by_move(self, game_repr: GameRepresentation):
+        self.update_queue(game_repr.get_board())
 
     def update_queue(self, board: Board):
         board_hash = hash_board(board)
@@ -27,3 +29,5 @@ class MetaSearch(SearchAlgorithm):
         if len(self.queue) > self.queue_size:
             logging.info(f"Remove {self.queue[0]} from queue")
             self.alg.forbidden_nodes.remove(self.queue.pop(0))
+        logging.info(f"Queue state = {self.queue}")
+        logging.info(f"Forbidden nodes = {self.alg.forbidden_nodes}")
