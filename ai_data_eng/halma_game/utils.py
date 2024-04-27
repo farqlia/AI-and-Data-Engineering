@@ -1,8 +1,14 @@
 import logging
 import sys
+from pathlib import Path
 from typing import Set
 
+import pandas as pd
+
 from ai_data_eng.halma_game.globals import Board, STATE, CAMP, Field
+from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
+from ai_data_eng.halma_game.logic.gamestate import GameState
 
 
 def configure_logging(minimal_level=logging.DEBUG):
@@ -55,8 +61,27 @@ def hash_board(board: Board) -> int:
     return hash(board_string)
 
 
+def split(field):
+    pos = field.split(',')
+    return int(pos[0]), int(pos[1])
+
+
 def concat_board_state(board: Board) -> str:
     return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
+
+
+def read_game_state_from_file(dir_path: Path, steps: int) -> GameRepresentation:
+    player_black = pd.read_csv(dir_path / 'PLAYER.BLACK', header=None, sep=';')
+    player_white = pd.read_csv(dir_path / 'PLAYER.WHITE', header=None, sep=';')
+    engine = Engine()
+    game_repr = GameState(engine)
+    for i in range(steps):
+        game_repr.move(split(player_black.iloc[i, 0]),
+                       split(player_black.iloc[i, 1]))
+        game_repr.move(split(player_white.iloc[i, 0]),
+                       split(player_white.iloc[i, 1]))
+
+    return game_repr
 
 
 configure_logging(logging.INFO)

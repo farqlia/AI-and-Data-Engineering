@@ -67,7 +67,7 @@ class HalmaGUI:
 
     def update_displayed_info(self):
         self.player_label.configure(text=f"Player: {self.game_adapter.moving_player()}")
-        self.round_label.configure(text=f"Round: {self.game_adapter.round_number()}")
+        self.round_label.configure(text=f"Move: {self.game_adapter.round_number()}")
         self.tree_size_label.configure(text=f"TS: {self.game_adapter.player1.search_tree_size()}|{self.game_adapter.player2.search_tree_size()}")
 
     # color this according to the
@@ -140,8 +140,13 @@ class HalmaGUI:
 
     def draw_camps(self):
         '''This should be called at the beginning'''
-        for i in range(16):
-            for j in range(16):
-                color = self.bg_colors.get(self.game_adapter.get_board()[i][j], 'white')
-                self.ui_board[i][j].configure(highlightthickness=2, highlightbackground=color, highlightcolor=color)
+        for i in range(0, 5):
+            for j in range(0, [5, 5, 4, 3, 2][i]):
+                color = self.bg_colors.get(STATE.BLACK, 'white')
+                self.ui_board[i][j].configure(highlightthickness=2, highlightbackground=color)
 
+        # Ustawiamy obóz Białego.
+        for i in range(0, 5):
+            for j in range(0, [5, 5, 4, 3, 2][i]):
+                color = self.bg_colors.get(STATE.WHITE, 'white')
+                self.ui_board[15 - i][15 - j].configure(highlightthickness=2, highlightbackground=color)

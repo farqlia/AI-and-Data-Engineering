@@ -31,7 +31,7 @@ class MinMax(SearchAlgorithm):
 
         winner = game_repr.get_winner()
         if winner:
-            logging.debug(f"[{depth}/{self.tree_size}] Winner {winner}")
+            logging.info(f"[{depth}/{self.tree_size}] Winner {winner}")
             return sys.maxsize if winner == player.repr() else -sys.maxsize + 1
 
         elif depth >= self.search_depth:
@@ -46,15 +46,16 @@ class MinMax(SearchAlgorithm):
             for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
                 is_moved = game_repr.move(field_from, field_to)
                 if is_moved and to_be_visited(game_repr.get_board(), already_visited):
-                    # logging.debug(f"Move {field_from} -> {field_to}")
+                    logging.debug(f"Try move  {field_from} -> {field_to}")
                     value = self.minmax_search(game_repr, player, depth + 1, already_visited)
                     # None is if the node is invalid
                     if value is not None:
                         self.tree_size += 1
-                        if value > max_value:
+                        if value >= max_value:
                             max_value = value
                             if depth == 0:
                                 self.best_move = (field_from, field_to)
+                                logging.debug(f"Best move: {self.best_move}")
                 if is_moved:
                     game_repr.backtrack()
             # if the tree hasn't been searched at all
@@ -68,7 +69,7 @@ class MinMax(SearchAlgorithm):
             min_value = sys.maxsize
             for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
                 is_moved = game_repr.move(field_from, field_to)
-                # logging.debug(f"Try move {field_from} -> {field_to}")
+                logging.debug(f"Try move {field_from} -> {field_to}")
                 if is_moved and to_be_visited(game_repr.get_board(), already_visited):
                     value = self.minmax_search(game_repr, player, depth + 1, already_visited)
                     if value is not None:
