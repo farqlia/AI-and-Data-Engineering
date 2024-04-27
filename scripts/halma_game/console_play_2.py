@@ -13,4 +13,4 @@ if __name__ == "__main__":
     player_black = {'strategy': STRATEGY.DISTANCE, 'search_depth': 2}
     # player_black['algorithm'] = MinMax
     player_black['algorithm'] = partial(MetaSearch, alg_init=MinMax)
-    play_minmax_minmax_match(player_white, player_black, ConsoleUI)
+    play_minmax_minmax_match(player_white, player_black, HalmaGUI)
