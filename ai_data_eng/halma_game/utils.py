@@ -1,14 +1,8 @@
 import logging
 import sys
-from pathlib import Path
-from typing import Set
-
-import pandas as pd
+from typing import Set, List
 
 from ai_data_eng.halma_game.globals import Board, STATE, CAMP, Field
-from ai_data_eng.halma_game.logic.engine import Engine
-from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
-from ai_data_eng.halma_game.logic.gamestate import GameState
 
 
 def configure_logging(minimal_level=logging.DEBUG):
@@ -31,7 +25,6 @@ def configure_logging(minimal_level=logging.DEBUG):
 
 
 def filter_maker(level):
-
     def filter_log(record):
         return record.levelno <= level
 
@@ -40,6 +33,7 @@ def filter_maker(level):
 
 def cell_value(cell):
     return cell.value if isinstance(cell, STATE) else cell
+
 
 def print_board(board):
     print("   ", " ".join([f"{n:02}" for n in range(16)]))
@@ -70,18 +64,13 @@ def concat_board_state(board: Board) -> str:
     return ''.join([str(board[i][j].value) for i in range(16) for j in range(16)])
 
 
-def read_game_state_from_file(dir_path: Path, steps: int) -> GameRepresentation:
-    player_black = pd.read_csv(dir_path / 'PLAYER.BLACK', header=None, sep=';')
-    player_white = pd.read_csv(dir_path / 'PLAYER.WHITE', header=None, sep=';')
-    engine = Engine()
-    game_repr = GameState(engine)
-    for i in range(steps):
-        game_repr.move(split(player_black.iloc[i, 0]),
-                       split(player_black.iloc[i, 1]))
-        game_repr.move(split(player_white.iloc[i, 0]),
-                       split(player_white.iloc[i, 1]))
+def pos_on_board(y, x):
+    return (y >= 0 and x >= 0) and (y <= 15 and x <= 15)
 
-    return game_repr
+
+def get_neighbourhood(field: Field) -> List[Field]:
+    return [(field[0] + i, field[1] + j) for i in [-1, 0, 1] for j in [-1, 0, 1] if
+            pos_on_board(field[0] + i, field[1] + j)]
 
 
 configure_logging(logging.INFO)

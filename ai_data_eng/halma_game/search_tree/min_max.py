@@ -1,15 +1,12 @@
-import copy
+import logging
 import logging
 import sys
-from typing import Set, Union, Tuple
+from typing import Set
 
-import numpy as np
-
-from ai_data_eng.halma_game.globals import Board, PLAYER, Move, Field
+from ai_data_eng.halma_game.globals import Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm, to_be_visited, generate_candidate_moves
-from ai_data_eng.halma_game.utils import concat_board_state
 
 
 class MinMax(SearchAlgorithm):
@@ -21,13 +18,13 @@ class MinMax(SearchAlgorithm):
 
     def _search(self, game_repr: GameRepresentation, player: Player) -> Move:
         best_val = self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
-        logging.info(f"Best value: {best_val}")
+        logging.info(f"Best value: {best_val:.2f}")
         best_move = self.best_move
         self.best_move = None
         return best_move
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
-                      already_visited: Set[int]):
+                   already_visited: Set[int]):
         tree_size_before = self.tree_size
         logging.debug(f"[{depth}/{self.tree_size}] MIN {game_repr.moving_player()}")
         min_value = sys.maxsize
@@ -47,7 +44,7 @@ class MinMax(SearchAlgorithm):
         return min_value
 
     def search_max(self, game_repr: GameRepresentation, player: Player, depth: int,
-                      already_visited: Set[int]):
+                   already_visited: Set[int]):
         tree_size_before = self.tree_size
         # take max over children
         logging.debug(f"[{depth}/{self.tree_size}] MAX {game_repr.moving_player()}")
@@ -92,4 +89,3 @@ class MinMax(SearchAlgorithm):
             return self.search_max(game_repr, player, depth, already_visited)
         else:
             return self.search_min(game_repr, player, depth, already_visited)
-

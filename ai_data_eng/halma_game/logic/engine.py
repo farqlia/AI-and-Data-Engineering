@@ -1,4 +1,5 @@
 from ai_data_eng.halma_game.globals import STATE, PLAYER, Board
+from ai_data_eng.halma_game.utils import pos_on_board
 
 
 class Engine:
@@ -21,20 +22,6 @@ class Engine:
         for i in range(0, 5):
             for j in range(0, [5, 5, 4, 3, 2][i]):
                 self._board[15 - i][15 - j] = STATE.WHITE
-
-    def _pos_on_board(self, y, x):
-        """! Sprawdza, czy pole jest na planszy.
-
-        @param y Współrzędna Y pola.
-        @param x Współrzędna X pola.
-
-        @return Czy pole jest na planszy.
-        """
-        if (y < 0 or x < 0):
-            return False
-        if (y > 15 or x > 15):
-            return False
-        return True
 
     def _pos_permitted(self, y, x, forbidden):
         """! Sprawdza, czy pole jest na liście pól zakazanych.
@@ -59,7 +46,7 @@ class Engine:
 
         @return Czy wolno się ruszyć na dane pole.
         """
-        if self._pos_on_board(y, x) and self._pos_permitted(y, x, forbidden):  # noqa: E129
+        if pos_on_board(y, x) and self._pos_permitted(y, x, forbidden):  # noqa: E129
             return True
         return False
 
@@ -83,7 +70,7 @@ class Engine:
 
         for dy, dx in zip(delta_y, delta_x):
             if (self._validate_pos(y + dy, x + dx, visited) and
-                self._board[y + dy][x + dx] == STATE.EMPTY):  # noqa E129
+                    self._board[y + dy][x + dx] == STATE.EMPTY):  # noqa E129
 
                 if len(visited) == 0:
                     possible.append((y + dy, x + dx))
@@ -118,7 +105,7 @@ class Engine:
         @param value Stan pola.
         """
 
-        if (not self._pos_on_board(y, x)):
+        if (not pos_on_board(y, x)):
             raise ValueError('No such a field.')
 
         if (value not in STATE):
@@ -135,7 +122,7 @@ class Engine:
         @return Stan pola.
         """
 
-        if (not self._pos_on_board(y, x)):
+        if (not pos_on_board(y, x)):
             raise ValueError('No such a field.')
 
         value = self._board[y][x]
@@ -144,4 +131,3 @@ class Engine:
             raise ValueError('Corrupted data.')
 
         return value
-

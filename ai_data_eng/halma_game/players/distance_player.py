@@ -1,7 +1,7 @@
 import sys
 from typing import Union
 
-from ai_data_eng.halma_game.globals import PLAYER, CAMP, Field
+from ai_data_eng.halma_game.globals import PLAYER
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
@@ -31,4 +31,3 @@ class DistancePlayer(Player):
         if in_camp == self.camp:
             opp_distance += self.depth_value(point)
         return opp_distance
-

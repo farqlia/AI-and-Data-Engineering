@@ -1,8 +1,6 @@
 from typing import Union, List
 
-from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP, Field, Board, Move
-import logging
-
+from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP, Field, Board
 from ai_data_eng.halma_game.logic.engine import Engine
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 
@@ -27,7 +25,7 @@ class GameState(GameRepresentation):
         """
         return self._engine.get_board()
 
-    def round_number(self) -> int:
+    def move_number(self) -> int:
         """! Zwraca numer obecnego ruchu.
 
         @return Numer ruchu.
@@ -134,7 +132,7 @@ class GameState(GameRepresentation):
 
         # Sprawdzamy, czy jest w obozie Białego.
         if (x in range(11, 16) and
-                15-y in range(0, [5, 5, 4, 3, 2][15-x])):
+                15 - y in range(0, [5, 5, 4, 3, 2][15 - x])):
             return CAMP.WHITE
 
         return None

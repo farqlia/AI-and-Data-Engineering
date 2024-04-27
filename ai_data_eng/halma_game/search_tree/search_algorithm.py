@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, Set
+from typing import Set
 
 from ai_data_eng.halma_game.globals import Move, Board, PLAYER
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
-from ai_data_eng.halma_game.utils import concat_board_state, hash_board
+from ai_data_eng.halma_game.utils import hash_board
 
 
 # Candidate moves can be also generated differently
@@ -44,4 +44,3 @@ class SearchAlgorithm(ABC):
     def search(self, game_repr: GameRepresentation, player) -> Move:
         self.tree_size = 0
         return self._search(game_repr, player)
-

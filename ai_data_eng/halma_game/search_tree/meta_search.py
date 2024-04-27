@@ -1,9 +1,7 @@
-import logging
-
 from ai_data_eng.halma_game.globals import Move, Board
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
-from ai_data_eng.halma_game.utils import concat_board_state, hash_board
+from ai_data_eng.halma_game.utils import hash_board
 
 
 class MetaSearch(SearchAlgorithm):

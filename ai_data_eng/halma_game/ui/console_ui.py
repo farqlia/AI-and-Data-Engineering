@@ -18,7 +18,7 @@ class ConsoleUI:
         print_board(self.game_adapter.get_board())
         # us = input("Continue? : ")
         # if us.lower()[0] != "y":
-          #   return
+        #   return
         self.winner = self.game_adapter.is_finished()
         if self.winner is not None:
             logging.info(f"Winner is {self.winner}")

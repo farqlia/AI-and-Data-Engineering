@@ -1,19 +1,19 @@
 import logging
 from pathlib import Path
+from timeit import default_timer as timer
 from typing import Union
 
 from ai_data_eng.halma_game.game import GamePlaying
 from ai_data_eng.halma_game.globals import Board, PLAYER, Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
-from timeit import default_timer as timer
 
 
 class GameUiAdapter:
-
     '''
     Adapter between game and game ui
     '''
+
     def __init__(self, game_repr: GameRepresentation,
                  player1: Player, player2: Player,
                  save_dir: Path):
@@ -44,7 +44,7 @@ class GameUiAdapter:
 
     def save_match_stats(self, winner):
         with open(self.save_dir / 'match-stats', mode='a') as f:
-            f.write(f"{self.game_repr.round_number()};{winner}")
+            f.write(f"{self.game_repr.move_number()};{winner}")
 
     def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int):
         with open(self.save_dir / str(player), mode='a') as f:
@@ -62,5 +62,3 @@ class GameUiAdapter:
 
     def round_number(self) -> int:
         return self.game_playing.round
-
-

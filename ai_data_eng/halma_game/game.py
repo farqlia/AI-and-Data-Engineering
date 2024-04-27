@@ -1,10 +1,9 @@
+import logging
 from typing import Tuple
 
 from ai_data_eng.halma_game.globals import Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
-import logging
-import ai_data_eng.halma_game.utils
 
 
 class GamePlaying:
@@ -15,11 +14,9 @@ class GamePlaying:
         self.game_repr = game_repr
         self._player_1: Player = player1
         self._player_2: Player = player2
-        self.round = 0
 
     def next(self) -> Tuple[Move, float]:
-        self.round += 1
-        logging.info(f"({self.round}) Player {self.game_repr.moving_player()} turn")
+        logging.info(f"({self.game_repr.move_number()}) Player {self.game_repr.moving_player()} turn")
         if self.game_repr.moving_player() == self._player_1.flag:
             move = self.apply_player_move(self._player_1)
         else:

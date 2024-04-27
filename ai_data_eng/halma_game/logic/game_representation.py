@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 
-from ai_data_eng.halma_game.globals import PLAYER, Field, Board, Move, CAMP
+from ai_data_eng.halma_game.globals import PLAYER, Field, Board, CAMP
 
 
 class GameRepresentation(ABC):
@@ -15,7 +15,7 @@ class GameRepresentation(ABC):
         pass
 
     @abstractmethod
-    def round_number(self) -> int:
+    def move_number(self) -> int:
         pass
 
     @abstractmethod
@@ -52,7 +52,7 @@ class GameRepresentation(ABC):
     def in_camp(self, y, x) -> CAMP:
         pass
 
-    def get_occupied_fields(self, plr_flag: PLAYER):
+    def get_occupied_fields(self, plr_flag: Union[PLAYER, CAMP]):
         fields = []
         state_board = self.get_board()
         for i in range(16):
@@ -60,7 +60,3 @@ class GameRepresentation(ABC):
                 if state_board[i][j].value == plr_flag.value:
                     fields.append((i, j))
         return fields
-
-
-
-

@@ -1,12 +1,9 @@
 import logging
-import time
+import threading
 import tkinter as tk
 from tkinter import messagebox
-import threading
 
-from ai_data_eng.halma_game.globals import PLAYER, STATE
-from ai_data_eng.halma_game.logic.engine import Engine
-from ai_data_eng.halma_game.logic.gamestate import GameState
+from ai_data_eng.halma_game.globals import STATE
 from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
 
 
@@ -80,7 +77,8 @@ class HalmaGUI:
     def update_displayed_info(self):
         self.player_label.configure(text=f"Player: {self.game_adapter.moving_player()}")
         self.round_label.configure(text=f"Move: {self.game_adapter.round_number()}")
-        self.tree_size_label.configure(text=f"TS: {self.game_adapter.player1.search_tree_size()}|{self.game_adapter.player2.search_tree_size()}")
+        self.tree_size_label.configure(
+            text=f"TS: {self.game_adapter.player1.search_tree_size()}|{self.game_adapter.player2.search_tree_size()}")
 
     def weights_to_colors(self, weights):
         base_color = (255, 127, 255)
@@ -94,12 +92,6 @@ class HalmaGUI:
         for i in range(16):
             for j in range(16):
                 self.ui_board[i][j].configure(bg=colors[i][j])
-
-    def create_welcome_window(self):
-        pass
-
-    def create_game_board(self):
-        pass
 
     def create_board(self):
         self.ui_board = []
@@ -155,7 +147,8 @@ class HalmaGUI:
             for j in range(16):
                 self.ui_board[i][j].delete("all")
                 self.ui_board[i][j].configure(bg=self.cell_colors[state_board[i][j]])
-                self.ui_board[i][j].create_text(15, 15, text=as_str(state_board, i, j), font=("Arial", 10), fill="black")
+                self.ui_board[i][j].create_text(15, 15, text=as_str(state_board, i, j), font=("Arial", 10),
+                                                fill="black")
 
     def draw_camps(self):
         '''This should be called at the beginning'''

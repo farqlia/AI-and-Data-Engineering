@@ -1,15 +1,12 @@
-from pathlib import Path
-from typing import Union, List, Tuple
-
-from ai_data_eng.halma_game.globals import PLAYER, Field, Move, HALMA_DIR, CAMP
 from abc import ABC, abstractmethod
+from typing import Union
 
+from ai_data_eng.halma_game.globals import PLAYER, Field, Move, CAMP
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
-from timeit import default_timer as timer
+
 
 class Player(ABC):
-
     '''Player will be passed heuristic and other algorithms
     maybe make this abstract class?'''
 
@@ -36,10 +33,10 @@ class Player(ABC):
         return self.flag
 
     def depth_value(self, point: Field):
-        return (self.comp(point[0]) + self.comp(point[0])) / 30
+        return (self.comp(point[0]) + self.comp(point[0])) / 300
 
     def opp_depth_value(self, point: Field):
-        return (self.opp_comp(point[0]) + self.opp_comp(point[0])) / 30
+        return (self.opp_comp(point[0]) + self.opp_comp(point[0])) / 300
 
     def formula(self):
         return lambda x: 15 - x if self.flag == PLAYER.BLACK else x
@@ -56,5 +53,3 @@ class Player(ABC):
         Returns the depth of the searched game tree. Should be called only once per round
         '''
         return self.search_alg.get_searched_tree_size()
-
-
