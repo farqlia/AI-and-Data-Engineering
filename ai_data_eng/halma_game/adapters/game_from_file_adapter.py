@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Union
@@ -29,11 +30,15 @@ class GameFromFileAdapter(GameAdapter):
         self.dfs = {PLAYER.BLACK: self.player_black_df, PLAYER.WHITE: self.player_white_df}
         self.player1 = EmptyPlayer()
         self.player2 = EmptyPlayer()
+        logging.info(f"{len(self.player_black_df)} {len(self.player_white_df)}")
 
     def next(self):
         self.current_player = self.game_repr.moving_player()
-        field_from, field_to = split(self.dfs[self.current_player].iloc[self.round_number() // 2, 0]), split(self.dfs[self.current_player].iloc[self.round_number() // 2, 1])
-        self.game_repr.move(field_from, field_to)
+        logging.info(f"[{self.round_number()}] Current player: {self.current_player}")
+        field_from, field_to = (split(self.dfs[self.current_player].iloc[self.round_number() // 2, 0]),
+                                split(self.dfs[self.current_player].iloc[self.round_number() // 2, 1]))
+        if not self.game_repr.move(field_from, field_to):
+            logging.warning(f"Attempted move {field_from} -> {field_to} was invalid")
         return field_from, field_to
 
     def is_finished(self) -> Union[PLAYER, None]:

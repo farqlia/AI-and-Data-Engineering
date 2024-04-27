@@ -84,4 +84,4 @@ def in_camp(y, x):
         return CAMP.WHITE
 
 
-configure_logging(logging.WARNING)
+configure_logging(logging.INFO)
