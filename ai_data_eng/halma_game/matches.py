@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
 from ai_data_eng.halma_game.utils import split
 
 strategy_player = {
-    STRATEGY.STATIC_WEIGHTED: StaticWeightsPlayer,
-    STRATEGY.ADAPTIVE_WEIGHTED: AdaptiveWeightsPlayer,
+    STRATEGY.STATIC_WEIGHTS: StaticWeightsPlayer,
+    STRATEGY.ADAPTIVE_WEIGHTS: AdaptiveWeightsPlayer,
     STRATEGY.DISTANCE: DistancePlayer,
     STRATEGY.NONE: ConsolePlayer
 }
@@ -39,7 +40,7 @@ def read_game_state_from_file(dir_path: Path, steps: int) -> GameRepresentation:
     return game_repr
 
 
-def play_match(player_black_params, player_white_params, guiInit):
+def play_match(player_black_params, player_white_params, guiInit, match_dir_suffix=''):
     engine = Engine()
     game_repr = GameState(engine)
     player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
@@ -50,8 +51,10 @@ def play_match(player_black_params, player_white_params, guiInit):
                                                                     player_white_params['algorithm'](
                                                                         search_depth=player_white_params[
                                                                             'search_depth']))
-    match_dir = HALMA_DIR / f'{player_black.search_alg.name}-{player_black_params["search_depth"]}-{player_white.search_alg.name}-{player_white_params["search_depth"]}-{player_black_params["strategy"].value}-{player_white_params["strategy"].value}-{datetime.datetime.today().strftime("%d-%H%M")}'
-    os.makedirs(match_dir)
+    matches_dir = HALMA_DIR / f'{player_black.search_alg.name}-{player_white.search_alg.name}'
+    match_dir = matches_dir / f'{player_black_params["search_depth"]}-{player_white_params["search_depth"]}{match_dir_suffix}'
+    os.makedirs(match_dir, exist_ok=True)
+
     game_adapter = GameUiAdapter(game_repr, player_black, player_white,
                                  match_dir)
 

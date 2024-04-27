@@ -88,7 +88,7 @@ class GameState(GameRepresentation):
             # Jeżeli w danym ruchu ruszył się czarny,
             # przechodzimy do następnego ruchu.
             self._engine.moving_player = PLAYER.WHITE
-            self._engine.move += 1
+
 
     def possible_moves(self, field_from: Field) -> List[Field]:
         return self._engine.moves(*field_from)
@@ -106,6 +106,7 @@ class GameState(GameRepresentation):
 
         self._apply_move(field_from, field_to)
         self.prev_move_stack.append((field_from, field_to))
+        self._engine.move += 1
         return True
 
     def backtrack(self):

@@ -8,10 +8,10 @@ from ai_data_eng.halma_game.search_tree.min_max import MinMax
 from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 
 if __name__ == "__main__":
-    player_white = {'strategy': STRATEGY.STATIC_WEIGHTED, 'search_depth': 2}
+    player_white = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 2}
     # player_white['algorithm'] = MinMax
     player_white['algorithm'] = partial(MetaSearch, alg_init=MinMax)
-    player_black = {'strategy': STRATEGY.STATIC_WEIGHTED, 'search_depth': 2}
+    player_black = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 2}
     # player_black['algorithm'] = MinMax
     player_black['algorithm'] = partial(MetaSearch, alg_init=MinMax)
     match_dir = Path('../../data/halma/human_minmax_minmax-26-2105-distance-distance')

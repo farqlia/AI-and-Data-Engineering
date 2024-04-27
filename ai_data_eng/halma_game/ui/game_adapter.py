@@ -1,4 +1,6 @@
+import datetime
 import logging
+import os
 from pathlib import Path
 from timeit import default_timer as timer
 from typing import Union
@@ -21,7 +23,12 @@ class GameUiAdapter:
         self.player1 = player1
         self.player2 = player2
         self.current_player = self.player1
-        self.save_dir = save_dir
+        date_suffix = datetime.datetime.today().strftime("%d-%H%M")
+        self.save_dir = save_dir / f'{self.player1.strategy}-{self.player2.strategy}'
+        os.makedirs(self.save_dir, exist_ok=True)
+        self.match_file = self.save_dir / f'stats-{date_suffix}'
+        self.files = {self.player1.flag: self.save_dir / f'{self.player1.flag}-{date_suffix}',
+                      self.player2.flag: self.save_dir / f'{self.player2.flag}-{date_suffix}'}
 
     def setup(self):
         self.game_playing = GamePlaying(self.game_repr, self.player1, self.player2)
@@ -43,11 +50,11 @@ class GameUiAdapter:
         return winner
 
     def save_match_stats(self, winner):
-        with open(self.save_dir / 'match-stats', mode='a') as f:
+        with open(self.match_file, mode='a') as f:
             f.write(f"{self.game_repr.move_number()};{winner}")
 
     def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int):
-        with open(self.save_dir / str(player), mode='a') as f:
+        with open(self.files[player], mode='a') as f:
             from_, to = move
             f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f};{tree_size}\n")
 
@@ -61,4 +68,4 @@ class GameUiAdapter:
         return self.player1 if self.game_repr.moving_player() == self.player1.flag else self.player2
 
     def round_number(self) -> int:
-        return self.game_playing.round
+        return self.game_repr.move()

@@ -8,8 +8,8 @@ os.makedirs(HALMA_DIR, exist_ok=True)
 
 
 class STRATEGY(Enum):
-    STATIC_WEIGHTED = 'static weighted'
-    ADAPTIVE_WEIGHTED = 'adaptive weighted'
+    STATIC_WEIGHTS = 'static_weights'
+    ADAPTIVE_WEIGHTS = 'adaptive_weights'
     DISTANCE = 'distance'
     NONE = 'none'
 

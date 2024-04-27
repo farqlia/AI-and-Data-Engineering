@@ -1,6 +1,6 @@
 from typing import Union
 
-from ai_data_eng.halma_game.globals import PLAYER
+from ai_data_eng.halma_game.globals import PLAYER, STRATEGY
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
@@ -9,7 +9,7 @@ from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
 class StaticWeightsPlayer(Player):
 
     def __init__(self, plr: PLAYER, search_alg: SearchAlgorithm):
-        super().__init__(plr, search_alg)
+        super().__init__(plr, search_alg, STRATEGY.STATIC_WEIGHTS)
         self.weights = [[0.0 for _ in range(16)] for _ in range(16)]
         self.set_weights()
 

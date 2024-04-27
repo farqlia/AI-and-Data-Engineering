@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
-from ai_data_eng.halma_game.globals import PLAYER, Field, Move, CAMP
+from ai_data_eng.halma_game.globals import PLAYER, Field, Move, CAMP, STRATEGY
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
 
@@ -11,8 +11,10 @@ class Player(ABC):
     maybe make this abstract class?'''
 
     def __init__(self, plr: PLAYER,
-                 search_alg: SearchAlgorithm) -> None:
+                 search_alg: SearchAlgorithm,
+                 strategy: STRATEGY) -> None:
         self.flag: PLAYER = plr
+        self.strategy = strategy
         self.search_alg = search_alg
         self.camp: CAMP = CAMP.WHITE if self.flag == PLAYER.WHITE else CAMP.BLACK
         self.opponent_camp: CAMP = CAMP.BLACK if self.flag == PLAYER.WHITE else CAMP.WHITE

@@ -1,7 +1,7 @@
 import sys
 from typing import Union
 
-from ai_data_eng.halma_game.globals import PLAYER
+from ai_data_eng.halma_game.globals import PLAYER, STRATEGY
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
@@ -11,7 +11,8 @@ from ai_data_eng.halma_game.utils import get_camp_boundaries
 class DistancePlayer(Player):
 
     def __init__(self, plr: PLAYER, search_alg: SearchAlgorithm):
-        super().__init__(plr, search_alg)
+        super().__init__(plr, search_alg,
+                         STRATEGY.DISTANCE)
         self.opponent_boundaries = get_camp_boundaries(self.opponent_camp)
         self.boundaries = get_camp_boundaries(self.camp)
 

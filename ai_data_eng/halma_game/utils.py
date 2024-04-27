@@ -73,4 +73,4 @@ def get_neighbourhood(field: Field) -> List[Field]:
             pos_on_board(field[0] + i, field[1] + j)]
 
 
-configure_logging(logging.INFO)
+configure_logging(logging.WARNING)
