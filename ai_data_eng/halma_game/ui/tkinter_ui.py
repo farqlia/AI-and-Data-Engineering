@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from ai_data_eng.halma_game.globals import STATE
-from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
+from ai_data_eng.halma_game.adapters.game_live_adapter import GameLiveUiAdapter
 
 
 def as_str(board, y, x):
@@ -21,7 +21,7 @@ def from_rgb(rgb):
 
 
 class HalmaGUI:
-    def __init__(self, game_adapter: GameUiAdapter):
+    def __init__(self, game_adapter: GameLiveUiAdapter):
         self.master = tk.Tk()
         self.game_adapter = game_adapter
         self.master.title("Halma Game")

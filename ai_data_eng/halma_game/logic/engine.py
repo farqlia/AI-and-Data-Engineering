@@ -72,6 +72,7 @@ class Engine:
             if (self._validate_pos(y + dy, x + dx, visited) and
                     self._board[y + dy][x + dx] == STATE.EMPTY):  # noqa E129
 
+                # within the recursion we can only jump over pieces
                 if len(visited) == 0:
                     possible.append((y + dy, x + dx))
 

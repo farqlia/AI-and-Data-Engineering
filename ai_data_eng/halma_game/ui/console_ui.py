@@ -1,12 +1,12 @@
 import logging
 
-from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
+from ai_data_eng.halma_game.adapters.game_live_adapter import GameLiveUiAdapter
 from ai_data_eng.halma_game.utils import print_board
 
 
 class ConsoleUI:
 
-    def __init__(self, game_adapter: GameUiAdapter):
+    def __init__(self, game_adapter: GameLiveUiAdapter):
         self.game_adapter = game_adapter
 
     def run(self):

@@ -6,7 +6,7 @@ from ai_data_eng.halma_game.utils import hash_board
 
 class MetaSearch(SearchAlgorithm):
 
-    def __init__(self, search_depth: int, alg_init, queue_size=30):
+    def __init__(self, search_depth: int, alg_init, queue_size=20):
         super().__init__(search_depth=search_depth)
         self.alg: SearchAlgorithm = alg_init(search_depth=search_depth)
         self.queue = []

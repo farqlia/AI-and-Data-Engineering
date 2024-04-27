@@ -5,13 +5,14 @@ from pathlib import Path
 from timeit import default_timer as timer
 from typing import Union
 
+from ai_data_eng.halma_game.adapters.game_adapter import GameAdapter
 from ai_data_eng.halma_game.game import GamePlaying
 from ai_data_eng.halma_game.globals import Board, PLAYER, Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.players.player import Player
 
 
-class GameUiAdapter:
+class GameLiveUiAdapter(GameAdapter):
     '''
     Adapter between game and game ui
     '''
@@ -40,7 +41,7 @@ class GameUiAdapter:
         end = timer()
         time = end - start
         self.save_player_stats(self.current_player.flag, time, move, self.current_player.search_tree_size())
-        return move
+        move
 
     def is_finished(self) -> Union[PLAYER, None]:
         winner = self.game_repr.get_winner()
@@ -68,4 +69,4 @@ class GameUiAdapter:
         return self.player1 if self.game_repr.moving_player() == self.player1.flag else self.player2
 
     def round_number(self) -> int:
-        return self.game_repr.move()
+        return self.game_repr.move_number()
