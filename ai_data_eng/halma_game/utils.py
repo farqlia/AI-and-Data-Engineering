@@ -73,4 +73,15 @@ def get_neighbourhood(field: Field) -> List[Field]:
             pos_on_board(field[0] + i, field[1] + j)]
 
 
+def in_camp(y, x):
+    if (x in range(0, 5) and
+            y in range(0, [5, 5, 4, 3, 2][x])):
+        return CAMP.BLACK
+
+    # Sprawdzamy, czy jest w obozie Białego.
+    if (x in range(11, 16) and
+            15 - y in range(0, [5, 5, 4, 3, 2][15 - x])):
+        return CAMP.WHITE
+
+
 configure_logging(logging.WARNING)

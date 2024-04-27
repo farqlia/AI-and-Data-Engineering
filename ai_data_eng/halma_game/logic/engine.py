@@ -1,5 +1,5 @@
-from ai_data_eng.halma_game.globals import STATE, PLAYER, Board
-from ai_data_eng.halma_game.utils import pos_on_board
+from ai_data_eng.halma_game.globals import STATE, PLAYER, Board, CAMP
+from ai_data_eng.halma_game.utils import pos_on_board, in_camp
 
 
 class Engine:
@@ -53,6 +53,12 @@ class Engine:
     def moves(self, y, x):
         return self._moves(y, x)
 
+    def not_out_of_opp_camp(self, from_field, to_field):
+        opp_camp = CAMP.WHITE if self.moving_player == PLAYER.BLACK else CAMP.BLACK
+        if in_camp(*from_field) == opp_camp:
+            return in_camp(*to_field) == opp_camp
+        return True
+
     def _moves(self, y, x, visited=[]):
         """! Funkcja pomocnicza metody moves.
 
@@ -69,15 +75,17 @@ class Engine:
         possible = []
 
         for dy, dx in zip(delta_y, delta_x):
-            if (self._validate_pos(y + dy, x + dx, visited) and
-                    self._board[y + dy][x + dx] == STATE.EMPTY):  # noqa E129
+            if ((self._validate_pos(y + dy, x + dx, visited) and
+                    self._board[y + dy][x + dx] == STATE.EMPTY) and
+                    self.not_out_of_opp_camp((y, x), (y + dy, x + dx))):  # noqa E129
 
                 # within the recursion we can only jump over pieces
                 if len(visited) == 0:
                     possible.append((y + dy, x + dx))
 
-            elif (self._validate_pos(y + 2 * dy, x + 2 * dx, visited) and
-                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY):
+            elif ((self._validate_pos(y + 2 * dy, x + 2 * dx, visited) and
+                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY) and
+                  self.not_out_of_opp_camp((y, x), (y + 2 * dy, x + 2 * dx))):
 
                 possible.append((y + 2 * dy, x + 2 * dx))
 
