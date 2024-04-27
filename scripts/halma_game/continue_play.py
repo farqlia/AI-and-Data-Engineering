@@ -1,5 +1,5 @@
 from ai_data_eng.halma_game.globals import STRATEGY
-from ai_data_eng.halma_game.matches import play_human_minmax_match, play_minmax_minmax_match, continue_match
+from ai_data_eng.halma_game.matches import play_match, continue_match
 from ai_data_eng.halma_game.search_tree.min_max import MinMax
 from ai_data_eng.halma_game.search_tree.meta_search import MetaSearch
 from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI

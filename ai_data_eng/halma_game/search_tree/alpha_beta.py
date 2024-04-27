@@ -12,71 +12,74 @@ from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm,
 from ai_data_eng.halma_game.utils import concat_board_state
 
 
-class MinMax(SearchAlgorithm):
+class AlphaBeta(SearchAlgorithm):
 
     def __init__(self, search_depth):
         super().__init__(search_depth)
         self.best_move = None
-        self.name = "minmax"
+        self.name = "alphabeta"
 
     def _search(self, game_repr: GameRepresentation, player: Player) -> Move:
-        best_val = self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
+        best_val = self.alphabeta_search(game_repr, player, 0, set(self.forbidden_nodes),
+                                         -sys.maxsize + 1, sys.maxsize)
         logging.info(f"Best value: {best_val}")
         best_move = self.best_move
         self.best_move = None
         return best_move
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
-                      already_visited: Set[int]):
+                      already_visited: Set[int], alpha: float, beta: float):
         tree_size_before = self.tree_size
         logging.debug(f"[{depth}/{self.tree_size}] MIN {game_repr.moving_player()}")
-        min_value = sys.maxsize
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             is_moved = game_repr.move(field_from, field_to)
             logging.debug(f"Try move {field_from} -> {field_to}")
             if is_moved and to_be_visited(game_repr.get_board(), already_visited):
-                value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
                 if value is not None:
-                    min_value = min(min_value, value)
+                    beta = min(beta, value)
                     self.tree_size += 1
             if is_moved:
                 game_repr.backtrack()
+            if alpha >= beta:
+                return beta # cut off
         if self.tree_size == tree_size_before:
-            min_value = None
-        logging.debug(f"[{depth}/{self.tree_size}] Min value = {min_value} {len(already_visited)}")
-        return min_value
+            beta = None
+        logging.debug(f"[{depth}/{self.tree_size}] Min value = {beta} {len(already_visited)}")
+        return beta
 
     def search_max(self, game_repr: GameRepresentation, player: Player, depth: int,
-                      already_visited: Set[int]):
+                      already_visited: Set[int], alpha: float, beta: float):
         tree_size_before = self.tree_size
         # take max over children
         logging.debug(f"[{depth}/{self.tree_size}] MAX {game_repr.moving_player()}")
-        max_value = -sys.maxsize + 1
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             is_moved = game_repr.move(field_from, field_to)
             if is_moved and to_be_visited(game_repr.get_board(), already_visited):
                 logging.debug(f"Try move  {field_from} -> {field_to}")
-                value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
                 # None is if the node is invalid
                 if value is not None:
                     self.tree_size += 1
-                    if value >= max_value:
-                        max_value = value
+                    if value >= alpha:
+                        alpha = value
                         if depth == 0:
                             self.best_move = (field_from, field_to)
                             logging.debug(f"Best move: {self.best_move}")
             if is_moved:
                 game_repr.backtrack()
+            if alpha >= beta:
+                return alpha # cut off
             # if the tree hasn't been searched at all
         if self.tree_size == tree_size_before:
-            max_value = None
+            alpha = None
             self.best_move = None
-        logging.debug(f"[{depth}/{self.tree_size}] Max value = {max_value} {len(already_visited)}")
-        return max_value
+        logging.debug(f"[{depth}/{self.tree_size}] Max value = {alpha} {len(already_visited)}")
+        return alpha
 
     # utilize backtracking to not copy the whole board
-    def minmax_search(self, game_repr: GameRepresentation, player: Player, depth: int,
-                      already_visited: Set[int]) -> float:
+    def alphabeta_search(self, game_repr: GameRepresentation, player: Player, depth: int,
+                      already_visited: Set[int], alpha: float, beta: float) -> float:
 
         winner = game_repr.get_winner()
         if winner:
@@ -89,7 +92,7 @@ class MinMax(SearchAlgorithm):
 
         # take max over children
         if game_repr.moving_player() == player.repr():
-            return self.search_max(game_repr, player, depth, already_visited)
+            return self.search_max(game_repr, player, depth, already_visited, alpha, beta)
         else:
-            return self.search_min(game_repr, player, depth, already_visited)
+            return self.search_min(game_repr, player, depth, already_visited, alpha, beta)
 

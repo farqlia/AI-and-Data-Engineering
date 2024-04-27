@@ -57,6 +57,9 @@ class GameUiAdapter:
     def moving_player(self) -> int:
         return self.game_repr.moving_player().value
 
+    def to_be_moved(self) -> Player:
+        return self.player1 if self.game_repr.moving_player() == self.player1.flag else self.player2
+
     def round_number(self) -> int:
         return self.game_playing.round
 

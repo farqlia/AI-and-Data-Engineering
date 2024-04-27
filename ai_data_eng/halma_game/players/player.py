@@ -26,6 +26,9 @@ class Player(ABC):
     def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
         pass
 
+    def get_weights(self):
+        return None
+
     def update_by_move(self, game_repr: GameRepresentation):
         self.search_alg.update_by_move(game_repr)
 

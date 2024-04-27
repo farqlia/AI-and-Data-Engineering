@@ -14,6 +14,15 @@ def as_str(board, y, x):
     return str(board[y][x].value) if board[y][x] != STATE.EMPTY else ""
 
 
+def color_formula(weight, color):
+    return color[0], int((1 - weight) * color[1]), color[2]
+
+
+def from_rgb(rgb):
+    """Translates an RGB tuple of integers to a Tkinter-friendly color code."""
+    return f'#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}'
+
+
 class HalmaGUI:
     def __init__(self, game_adapter: GameUiAdapter):
         self.master = tk.Tk()
@@ -59,18 +68,28 @@ class HalmaGUI:
             t.join()
             self.forward_gui()
 
-
     # Also print all necessary information
     def update_ui(self):
         self.draw_player_positions()
         self.update_displayed_info()
+        weights = self.game_adapter.to_be_moved().get_weights()
+        if weights:
+            colors = self.weights_to_colors(weights)
+            self.color_cells(colors)
 
     def update_displayed_info(self):
         self.player_label.configure(text=f"Player: {self.game_adapter.moving_player()}")
         self.round_label.configure(text=f"Move: {self.game_adapter.round_number()}")
         self.tree_size_label.configure(text=f"TS: {self.game_adapter.player1.search_tree_size()}|{self.game_adapter.player2.search_tree_size()}")
 
-    # color this according to the
+    def weights_to_colors(self, weights):
+        base_color = (255, 127, 255)
+        colors = [[None for _ in range(16)] for _ in range(16)]
+        for i in range(16):
+            for j in range(16):
+                colors[i][j] = from_rgb(color_formula(weights[i][j], base_color))
+        return colors
+
     def color_cells(self, colors):
         for i in range(16):
             for j in range(16):

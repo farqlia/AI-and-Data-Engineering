@@ -13,6 +13,7 @@ class MetaSearch(SearchAlgorithm):
         self.alg: SearchAlgorithm = alg_init(search_depth=search_depth)
         self.queue = []
         self.queue_size = queue_size
+        self.name = f"m-{self.alg.name}"
 
     def _search(self, game_repr: GameRepresentation, player) -> Move:
         move = self.alg.search(game_repr, player)

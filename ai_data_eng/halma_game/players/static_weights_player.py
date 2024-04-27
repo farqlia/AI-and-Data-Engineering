@@ -26,6 +26,9 @@ class StaticWeightsPlayer(Player):
             for j in range(15, i - 1, -1):
                 self.weights[j][15 - j + i] = weight
 
+    def get_weights(self):
+        return self.weights
+
     def sum_weights(self, game_repr: GameRepresentation):
         value = 0
         for point in game_repr.get_occupied_fields(self.flag):

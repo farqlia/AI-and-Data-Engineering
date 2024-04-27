@@ -11,6 +11,7 @@ from ai_data_eng.halma_game.logic.gamestate import GameState
 from ai_data_eng.halma_game.globals import STRATEGY
 from ai_data_eng.halma_game.players.console_player import ConsolePlayer
 from ai_data_eng.halma_game.players.distance_player import DistancePlayer
+from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
 from ai_data_eng.halma_game.search_tree.min_max import MinMax
 from ai_data_eng.halma_game.ui.game_adapter import GameUiAdapter
@@ -23,39 +24,28 @@ strategy_player = {
     STRATEGY.NONE: ConsolePlayer
 }
 
-
-def play_human_minmax_match(strategy_white: STRATEGY, depth: int):
+def play_match(player_black_params, player_white_params, guiInit):
     engine = Engine()
     game_repr = GameState(engine)
-    match_dir = HALMA_DIR / f'human_minmax_match-{datetime.datetime.today().strftime("%d-%H%M")}'
-    os.makedirs(match_dir)
-    player_black = ConsolePlayer(PLAYER.BLACK, None)
-    player_white = strategy_player[strategy_white](PLAYER.WHITE, MinMax(depth))
-    game_adapter = GameUiAdapter(game_repr, player_black, player_white,
-                                 match_dir)
-    game_adapter.setup()
-    root = tk.Tk()
-    halma_gui = HalmaGUI(root, game_adapter)
-    halma_gui.update_ui()
-
-    root.mainloop()
-
-
-def play_minmax_minmax_match(player_black_params, player_white_params, guiInit):
-    engine = Engine()
-    game_repr = GameState(engine)
-    match_dir = HALMA_DIR / f'human_minmax_minmax-{datetime.datetime.today().strftime("%d-%H%M")}-{player_black_params["strategy"].value}-{player_white_params["strategy"].value}'
-    os.makedirs(match_dir)
     player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
                                                                     player_black_params['algorithm'](search_depth=player_black_params['search_depth']))
     player_white = strategy_player[player_white_params['strategy']](PLAYER.WHITE,
                                                                     player_white_params['algorithm'](search_depth=player_white_params['search_depth']))
+    match_dir = HALMA_DIR / f'{player_black.search_alg.name}-{player_black_params["search_depth"]}-{player_white.search_alg.name}-{player_white_params["search_depth"]}-{player_black_params["strategy"].value}-{player_white_params["strategy"].value}-{datetime.datetime.today().strftime("%d-%H%M")}'
+    os.makedirs(match_dir)
     game_adapter = GameUiAdapter(game_repr, player_black, player_white,
                                  match_dir)
 
     game_adapter.setup()
     gui = guiInit(game_adapter)
     gui.run()
+
+
+def save_match_info(match_dir, player_black: Player, player_white: Player):
+    with open(match_dir / 'info', mode='w') as f:
+        f.write("player_flag;alg;depth;strategy")
+        for player in [player_black, player_white]:
+            f.write(f"{player.flag};{player.search_alg.name};{player.search_alg.search_depth};{player}")
 
 
 def continue_match(dir_path: Path, steps: int, player_black_params, player_white_params, guiInit):

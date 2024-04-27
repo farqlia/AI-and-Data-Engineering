@@ -29,6 +29,7 @@ class SearchAlgorithm(ABC):
         self.search_depth = search_depth
         self.tree_size = 0
         self.forbidden_nodes = set()
+        self.name = ""
 
     @abstractmethod
     def _search(self, game_repr: GameRepresentation, player) -> Move:
