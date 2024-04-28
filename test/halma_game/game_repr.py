@@ -39,3 +39,8 @@ def test_backtrack(game_state):
     game_state.backtrack()
     gs3 = concat_board_state(game_state.get_board())
     assert gs3 == gs1
+
+
+def test_moves(game_state):
+    moved = game_state.move((4, 1), (4, 2))
+    assert moved

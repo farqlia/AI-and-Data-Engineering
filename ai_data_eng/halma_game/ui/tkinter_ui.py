@@ -58,13 +58,6 @@ class HalmaGUI:
         self.game_adapter.next()
         self.winner = self.game_adapter.is_finished()
 
-    def play_automatically(self):
-        while self.winner is None:
-            t = threading.Thread(target=self.play_round)
-            t.start()
-            t.join()
-            self.forward_gui()
-
     # Also print all necessary information
     def update_ui(self):
         self.draw_player_positions()
@@ -131,8 +124,6 @@ class HalmaGUI:
         # self.back_button.pack(side=tk.LEFT, padx=5)
         self.forward_button = tk.Button(self.master, text="Next", command=self.navigate_forward)
         self.forward_button.grid(row=l_r, column=2, columnspan=1)
-        self.forward_button = tk.Button(self.master, text="Play", command=self.play_automatically)
-        self.forward_button.grid(row=l_r, column=3, columnspan=1)
         # self.forward_button.pack(side=tk.LEFT, padx=5)
         self.player_label = tk.Label(self.master, text=f"Player: {self.game_adapter.moving_player()}")
         self.player_label.grid(row=l_r, column=6, columnspan=4)

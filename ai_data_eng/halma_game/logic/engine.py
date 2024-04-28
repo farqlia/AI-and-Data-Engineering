@@ -60,7 +60,7 @@ class Engine:
         return True
 
     def _moves(self, y, x, visited=[]):
-        """! Funkcja pomocnicza metody moves.
+        """! Helper function of moves method.
 
         @param y Współrzędna Y pola.
         @param x Współrzędna X pola.
@@ -75,23 +75,20 @@ class Engine:
         possible = []
 
         for dy, dx in zip(delta_y, delta_x):
-            if ((self._validate_pos(y + dy, x + dx, visited) and
-                    self._board[y + dy][x + dx] == STATE.EMPTY) and
-                    self.not_out_of_opp_camp((y, x), (y + dy, x + dx))):  # noqa E129
+            if (self._validate_pos(y + dy, x + dx, visited) and
+                    (self._board[y + dy][x + dx] == STATE.EMPTY)
+                    and self.not_out_of_opp_camp((y, x), (y + dy, x + dx))):  # noqa E129
 
-                # within the recursion we can only jump over pieces
                 if len(visited) == 0:
                     possible.append((y + dy, x + dx))
 
-            elif ((self._validate_pos(y + 2 * dy, x + 2 * dx, visited) and
-                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY) and
+            elif (self._validate_pos(y + 2 * dy, x + 2 * dx, visited) and
+                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY and
                   self.not_out_of_opp_camp((y, x), (y + 2 * dy, x + 2 * dx))):
 
                 possible.append((y + 2 * dy, x + 2 * dx))
 
-                # Unikamy kopiowania tablicy.
-                # Dodajemy tylko do niej obecną
-                # pozycję, a następnie ją usuwamy.
+                # Don't copy the array - this way we save memory
                 visited.append((y, x))
                 possible += self._moves(y + 2 * dy, x + 2 * dx, visited)
                 visited.pop()

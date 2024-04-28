@@ -18,14 +18,14 @@ class GameFromFileAdapter(GameAdapter):
     def moving_player(self) -> int:
         return self.game_repr.moving_player().value
 
-    def __init__(self, game_repr: GameRepresentation, from_dir: Path):
+    def __init__(self, game_repr: GameRepresentation, from_dir: Path, date_prefix: str):
         self.game_repr = game_repr
         strategies = str(from_dir).split('/')[-1].split('-')
         self.strategy_1 = strategies[0]
         self.strategy_2 = strategies[1]
         files = os.listdir(from_dir)
-        self.player_black_df = pd.read_csv(from_dir / [f for f in files if f.startswith('PLAYER.BLACK')][0], header=None, sep=';')
-        self.player_white_df = pd.read_csv(from_dir / [f for f in files if f.startswith('PLAYER.WHITE')][0], header=None, sep=';')
+        self.player_black_df = pd.read_csv(from_dir / [f for f in files if f.endswith(f'{date_prefix}-PLAYER.BLACK')][0], header=None, sep=';')
+        self.player_white_df = pd.read_csv(from_dir / [f for f in files if f.endswith(f'{date_prefix}-PLAYER.WHITE')][0], header=None, sep=';')
         self.current_player = PLAYER.BLACK
         self.dfs = {PLAYER.BLACK: self.player_black_df, PLAYER.WHITE: self.player_white_df}
         self.player1 = EmptyPlayer()

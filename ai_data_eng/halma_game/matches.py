@@ -16,6 +16,7 @@ from ai_data_eng.halma_game.players.distance_player import DistancePlayer
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
 from ai_data_eng.halma_game.adapters.game_from_file_adapter import GameFromFileAdapter
+from ai_data_eng.halma_game.adapters.game_live_adapter import GameLiveUiAdapter
 from ai_data_eng.halma_game.utils import split
 
 strategy_player = {
@@ -55,8 +56,9 @@ def play_match(player_black_params, player_white_params, guiInit, match_dir_suff
     match_dir = matches_dir / f'{player_black_params["search_depth"]}-{player_white_params["search_depth"]}{match_dir_suffix}'
     os.makedirs(match_dir, exist_ok=True)
 
-    game_adapter = GameFromFileAdapter(game_repr, match_dir)
-
+    game_adapter = GameLiveUiAdapter(game_repr, player_black, player_white,
+                                 match_dir)
+    game_adapter.setup()
     gui = guiInit(game_adapter)
     gui.run()
 

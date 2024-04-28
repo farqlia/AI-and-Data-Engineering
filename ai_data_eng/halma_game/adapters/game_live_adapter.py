@@ -27,9 +27,9 @@ class GameLiveUiAdapter(GameAdapter):
         date_suffix = datetime.datetime.today().strftime("%d-%H%M")
         self.save_dir = save_dir / f'{self.player1.strategy}-{self.player2.strategy}'
         os.makedirs(self.save_dir, exist_ok=True)
-        self.match_file = self.save_dir / f'stats-{date_suffix}'
-        self.files = {self.player1.flag: self.save_dir / f'{self.player1.flag}-{date_suffix}',
-                      self.player2.flag: self.save_dir / f'{self.player2.flag}-{date_suffix}'}
+        self.match_file = self.save_dir / f'{date_suffix}-stats'
+        self.files = {self.player1.flag: self.save_dir / f'{date_suffix}-{self.player1.flag}',
+                      self.player2.flag: self.save_dir / f'{date_suffix}-{self.player2.flag}'}
 
     def setup(self):
         self.game_playing = GamePlaying(self.game_repr, self.player1, self.player2)
@@ -41,7 +41,7 @@ class GameLiveUiAdapter(GameAdapter):
         end = timer()
         time = end - start
         self.save_player_stats(self.current_player.flag, time, move, self.current_player.search_tree_size())
-        move
+        return move
 
     def is_finished(self) -> Union[PLAYER, None]:
         winner = self.game_repr.get_winner()

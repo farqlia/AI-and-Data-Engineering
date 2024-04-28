@@ -11,19 +11,19 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 from multiprocessing import Process
 
 if __name__ == "__main__":
-
+    depth = 3
     match_params = [
-        {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 2,
+        {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=AlphaBeta)},
-         'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 2,
+         'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=AlphaBeta)}},
-        {'player_white': {'strategy': STRATEGY.DISTANCE, 'search_depth': 2,
+        {'player_white': {'strategy': STRATEGY.DISTANCE, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=AlphaBeta)},
-         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': 2,
+         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=AlphaBeta)}},
-        {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': 2,
+        {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=AlphaBeta)},
-         'player_black': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': 2,
+         'player_black': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=AlphaBeta)}}
     ]
     processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
