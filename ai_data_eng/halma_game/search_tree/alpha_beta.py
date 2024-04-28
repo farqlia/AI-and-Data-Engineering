@@ -70,7 +70,6 @@ class AlphaBeta(SearchAlgorithm):
             # if the tree hasn't been searched at all
         if self.tree_size == tree_size_before:
             alpha = None
-            self.best_move = None
         logging.debug(f"[{depth}/{self.tree_size}] Max value = {alpha} {len(already_visited)}")
         return alpha
 

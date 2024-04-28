@@ -4,6 +4,7 @@ from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
 from ai_data_eng.halma_game.utils import hash_board
 
 
+# This class prevents the players from moving between the same states, inspired by TabuSearch
 class MetaSearch(SearchAlgorithm):
 
     def __init__(self, search_depth: int, alg_init, queue_size=20):
@@ -18,6 +19,7 @@ class MetaSearch(SearchAlgorithm):
         self.tree_size = self.alg.get_searched_tree_size()
         return move
 
+    # This is mainly used to update the queue as the opponent makes a move
     def update_by_move(self, game_repr: GameRepresentation):
         self.update_queue(game_repr.get_board())
 

@@ -11,7 +11,7 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 from multiprocessing import Process
 
 if __name__ == "__main__":
-    depth = 3
+    depth = 4
     match_params = [
         {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=AlphaBeta)},
