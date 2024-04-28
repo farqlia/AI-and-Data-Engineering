@@ -54,7 +54,4 @@ class Player(ABC):
         return best_move
 
     def search_tree_size(self) -> int:
-        '''
-        Returns the depth of the searched game tree. Should be called only once per round
-        '''
         return self.search_alg.get_searched_tree_size()
