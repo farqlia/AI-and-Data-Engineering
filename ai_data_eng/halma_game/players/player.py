@@ -34,6 +34,9 @@ class Player(ABC):
     def repr(self) -> PLAYER:
         return self.flag
 
+    def opponent(self) -> PLAYER:
+        return PLAYER.WHITE if self.flag == PLAYER.BLACK else PLAYER.BLACK
+
     def depth_value(self, point: Field):
         return (self.comp(point[0]) + self.comp(point[0])) / 300
 
