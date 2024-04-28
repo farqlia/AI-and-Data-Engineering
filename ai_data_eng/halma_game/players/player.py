@@ -38,10 +38,10 @@ class Player(ABC):
         return PLAYER.WHITE if self.flag == PLAYER.BLACK else PLAYER.BLACK
 
     def depth_value(self, point: Field):
-        return (self.comp(point[0]) + self.comp(point[0])) / 300
+        return (self.comp(point[0]) + self.comp(point[1])) / 300
 
     def opp_depth_value(self, point: Field):
-        return (self.opp_comp(point[0]) + self.opp_comp(point[0])) / 300
+        return (self.opp_comp(point[0]) + self.opp_comp(point[1])) / 300
 
     def formula(self):
         return lambda x: 15 - x if self.flag == PLAYER.BLACK else x

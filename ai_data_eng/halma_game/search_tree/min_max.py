@@ -32,10 +32,13 @@ class MinMax(SearchAlgorithm):
             is_moved = game_repr.move(field_from, field_to)
             # logging.debug(f"Try move {field_from} -> {field_to}")
             if is_moved:
-                value = self.minmax_search(game_repr, player, depth + 1, already_visited)
-                if value is not None:
-                    min_value = min(min_value, value)
-                    self.tree_size += 1
+                if to_be_visited(game_repr.get_board(), already_visited):
+                    value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                    if value is not None:
+                        min_value = min(min_value, value)
+                else:
+                    min_value = min(min_value, player.evaluate(game_repr))
+                self.tree_size += 1
             if is_moved:
                 game_repr.backtrack()
         if self.tree_size == tree_size_before:
@@ -53,15 +56,17 @@ class MinMax(SearchAlgorithm):
             is_moved = game_repr.move(field_from, field_to)
             if is_moved:
                 # logging.debug(f"Try move  {field_from} -> {field_to}")
-                value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                if to_be_visited(game_repr.get_board(), already_visited):
+                    value = self.minmax_search(game_repr, player, depth + 1, already_visited)
+                else:
+                    value = player.evaluate(game_repr)
                 # None is if the node is invalid
-                if value is not None:
-                    self.tree_size += 1
-                    if value >= max_value:
-                        max_value = value
-                        if depth == 0:
-                            self.best_move = (field_from, field_to)
-                            logging.debug(f"Best move: {self.best_move}")
+                self.tree_size += 1
+                if value is not None and value >= max_value:
+                    max_value = value
+                    if depth == 0:
+                        self.best_move = (field_from, field_to)
+                        logging.debug(f"Best move: {self.best_move}")
             if is_moved:
                 game_repr.backtrack()
             # if the tree hasn't been searched at all
