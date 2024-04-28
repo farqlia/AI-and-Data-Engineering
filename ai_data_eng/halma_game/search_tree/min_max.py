@@ -25,23 +25,26 @@ class MinMax(SearchAlgorithm):
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
                    already_visited: Set[int]):
+        tree_size_before = self.tree_size
         logging.debug(f"[{depth}/{self.tree_size}] MIN {game_repr.moving_player()}")
         min_value = sys.maxsize
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             game_repr.move(field_from, field_to)
             # logging.debug(f"Try move {field_from} -> {field_to}")
-            if to_be_visited(game_repr.get_board(), already_visited):
+            if to_be_visited(game_repr.get_board(), already_visited) :
                 value = self.minmax_search(game_repr, player, depth + 1, already_visited)
-                min_value = min(min_value, value)
-                self.tree_size += 1
-            else:
-                min_value = min(min_value, player.evaluate(game_repr))
+                if value is not None:
+                    min_value = min(min_value, value)
+                    self.tree_size += 1
             game_repr.backtrack()
+        if self.tree_size == tree_size_before:
+            min_value = None
         logging.debug(f"[{depth}/{self.tree_size}] Min value = {min_value} {len(already_visited)}")
         return min_value
 
     def search_max(self, game_repr: GameRepresentation, player: Player, depth: int,
                    already_visited: Set[int]):
+        tree_size_before = self.tree_size
         # take max over children
         logging.debug(f"[{depth}/{self.tree_size}] MAX {game_repr.moving_player()}")
         max_value = -sys.maxsize + 1
@@ -50,15 +53,18 @@ class MinMax(SearchAlgorithm):
             if to_be_visited(game_repr.get_board(), already_visited):
                 # logging.debug(f"Try move  {field_from} -> {field_to}")
                 value = self.minmax_search(game_repr, player, depth + 1, already_visited)
-                self.tree_size += 1
-            else:
-                value = player.evaluate(game_repr)
-            if value >= max_value:
-                max_value = value
-                if depth == 0:
-                    self.best_move = (field_from, field_to)
-                    logging.debug(f"Best move: {self.best_move}")
+                # None is if the node is invalid
+                if value is not None:
+                    self.tree_size += 1
+                    if value >= max_value:
+                        max_value = value
+                        if depth == 0:
+                            self.best_move = (field_from, field_to)
+                            logging.debug(f"Best move: {self.best_move}")
             game_repr.backtrack()
+            # if the tree hasn't been searched at all
+        if self.tree_size == tree_size_before:
+            max_value = None
         logging.debug(f"[{depth}/{self.tree_size}] Max value = {max_value} {len(already_visited)}")
         return max_value
 
