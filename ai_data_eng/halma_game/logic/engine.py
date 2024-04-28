@@ -83,7 +83,8 @@ class Engine:
                     possible.append((y + dy, x + dx))
 
             elif (self._validate_pos(y + 2 * dy, x + 2 * dx, visited) and
-                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY and
+                  self._board[y + 2 * dy][x + 2 * dx] == STATE.EMPTY
+                  and self._board[y + dy][x + dx] != STATE.EMPTY and
                   self.not_out_of_opp_camp((y, x), (y + 2 * dy, x + 2 * dx))):
 
                 possible.append((y + 2 * dy, x + 2 * dx))

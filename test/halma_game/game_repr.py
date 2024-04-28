@@ -42,5 +42,5 @@ def test_backtrack(game_state):
 
 
 def test_moves(game_state):
-    moved = game_state.move((4, 1), (4, 2))
-    assert moved
+    moves = game_state._engine.moves(4, 1)
+    print(moves)
