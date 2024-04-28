@@ -26,7 +26,7 @@ if __name__ == "__main__":
                           'algorithm': partial(MetaSearch, alg_init=MinMax)}}
     ]
     processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
-                 for params in match_params]
+                 for params in match_params][:1]
     for p in processes:
         p.start()
     for p in processes:

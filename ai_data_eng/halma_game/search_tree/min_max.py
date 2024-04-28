@@ -1,7 +1,7 @@
 import logging
 import logging
 import sys
-from typing import Set
+from typing import Set, Tuple
 
 from ai_data_eng.halma_game.globals import Move
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
@@ -16,12 +16,12 @@ class MinMax(SearchAlgorithm):
         self.best_move = None
         self.name = "minmax"
 
-    def _search(self, game_repr: GameRepresentation, player: Player) -> Move:
+    def _search(self, game_repr: GameRepresentation, player: Player)-> Tuple[Move, float]:
         best_val = self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
         logging.info(f"Best value: {best_val:.2f}")
         best_move = self.best_move
         self.best_move = None
-        return best_move
+        return best_move, best_val
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
                    already_visited: Set[int]):

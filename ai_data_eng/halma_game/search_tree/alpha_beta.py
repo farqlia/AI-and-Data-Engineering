@@ -22,7 +22,7 @@ class AlphaBeta(SearchAlgorithm):
         logging.info(f"Best value: {best_val:.2f}")
         best_move = self.best_move
         self.best_move = None
-        return best_move
+        return best_move, best_val
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
                    already_visited: Set[int], alpha: float, beta: float):

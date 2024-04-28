@@ -37,10 +37,10 @@ class GameLiveUiAdapter(GameAdapter):
     def next(self):
         self.current_player = self.player1 if self.game_repr.moving_player() == self.player1.flag else self.player2
         start = timer()
-        move = self.game_playing.next()
+        move, value = self.game_playing.next()
         end = timer()
         time = end - start
-        self.save_player_stats(self.current_player.flag, time, move, self.current_player.search_tree_size())
+        self.save_player_stats(self.current_player.flag, time, move, self.current_player.search_tree_size(), value)
         return move
 
     def is_finished(self) -> Union[PLAYER, None]:
@@ -54,10 +54,10 @@ class GameLiveUiAdapter(GameAdapter):
         with open(self.match_file, mode='a') as f:
             f.write(f"{self.game_repr.move_number()};{winner}")
 
-    def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int):
+    def save_player_stats(self, player: PLAYER, time: float, move: Move, tree_size: int, value: float):
         with open(self.files[player], mode='a') as f:
             from_, to = move
-            f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f};{tree_size}\n")
+            f.write(f"{from_[0]},{from_[1]};{to[0]},{to[1]};{time:.2f};{tree_size};{value:.2f}\n")
 
     def get_board(self) -> Board:
         return self.game_repr.get_board()

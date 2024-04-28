@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Set
+from typing import Set, Tuple
 
 from ai_data_eng.halma_game.globals import Move, Board, PLAYER
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
@@ -32,7 +32,7 @@ class SearchAlgorithm(ABC):
         self.name = ""
 
     @abstractmethod
-    def _search(self, game_repr: GameRepresentation, player) -> Move:
+    def _search(self, game_repr: GameRepresentation, player) -> Tuple[Move, float]:
         pass
 
     def get_searched_tree_size(self):
@@ -41,6 +41,6 @@ class SearchAlgorithm(ABC):
     def update_by_move(self, game_repr: GameRepresentation):
         pass
 
-    def search(self, game_repr: GameRepresentation, player) -> Move:
+    def search(self, game_repr: GameRepresentation, player) -> Tuple[Move, float]:
         self.tree_size = 0
         return self._search(game_repr, player)

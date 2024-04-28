@@ -29,7 +29,7 @@ class GamePlaying:
         '''
         Apply current player move and return it, plus some metadata info
         '''
-        next_move = player.make_move(self.game_repr)
+        next_move, value = player.make_move(self.game_repr)
         curr_player = self.game_repr.moving_player()
         if next_move:
             self.game_repr.move(*next_move)
@@ -37,4 +37,4 @@ class GamePlaying:
         else:
             logging.warning(f"Player {curr_player} move was invalid")
         logging.debug(f"Player {curr_player} tree depth is {player.search_tree_size()}")
-        return next_move
+        return next_move, value

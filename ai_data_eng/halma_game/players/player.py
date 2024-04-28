@@ -50,8 +50,8 @@ class Player(ABC):
         return lambda x: x if self.flag == PLAYER.BLACK else 15 - x
 
     def make_move(self, game_repr: GameRepresentation) -> Union[Move, None]:
-        best_move = self.search_alg.search(game_repr, self)
-        return best_move
+        best_move, value = self.search_alg.search(game_repr, self)
+        return best_move, value
 
     def search_tree_size(self) -> int:
         return self.search_alg.get_searched_tree_size()
