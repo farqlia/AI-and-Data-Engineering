@@ -9,8 +9,8 @@ from ai_data_eng.halma_game.ui.no_gui import NoUI
 from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 
 if __name__ == "__main__":
-    player_white = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 4,
+    player_white = {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': 1,
                     'algorithm': MinMax}
-    player_black = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 4,
+    player_black = {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': 1,
                     'algorithm': MinMax}
     play_match(player_white, player_black, HalmaGUI)

@@ -26,21 +26,16 @@ class AlphaBeta(SearchAlgorithm):
 
     def search_min(self, game_repr: GameRepresentation, player: Player, depth: int,
                    already_visited: Set[int], alpha: float, beta: float):
-        tree_size_before = self.tree_size
         logging.debug(f"[{depth}/{self.tree_size}] MIN {game_repr.moving_player()}")
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             game_repr.move(field_from, field_to)
-            if to_be_visited(game_repr.get_board(), already_visited):
-                value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
-                if value is not None:
-                    beta = min(beta, value)
-                    self.tree_size += 1
+            value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
+            beta = min(beta, value)
+            self.tree_size += 1
             game_repr.backtrack()
             if alpha >= beta:
                 logging.debug(f"[{depth}/{self.tree_size}] Cut off {alpha} >= {beta}")
                 return beta  # cut off
-        if self.tree_size == tree_size_before:
-            beta = None
         logging.debug(f"[{depth}/{self.tree_size}] Min value = {beta} {len(already_visited)}")
         return beta
 
@@ -51,23 +46,18 @@ class AlphaBeta(SearchAlgorithm):
         logging.debug(f"[{depth}/{self.tree_size}] MAX {game_repr.moving_player()}")
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             game_repr.move(field_from, field_to)
-            if to_be_visited(game_repr.get_board(), already_visited):
-                value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
-                # None is if the node is invalid
-                if value is not None:
-                    self.tree_size += 1
-                    if value >= alpha:
-                        alpha = value
-                        if depth == 0:
-                            self.best_move = (field_from, field_to)
-                            logging.debug(f"Best move: {self.best_move}")
+            value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
+            # None is if the node is invalid
+            self.tree_size += 1
+            if value >= alpha:
+                alpha = value
+                if depth == 0:
+                    self.best_move = (field_from, field_to)
+                    logging.debug(f"Best move: {self.best_move}")
             game_repr.backtrack()
             if alpha >= beta:
                 logging.debug(f"[{depth}/{self.tree_size}] Cut off {alpha} >= {beta}")
                 return alpha  # cut off
-            # if the tree hasn't been searched at all
-        if self.tree_size == tree_size_before:
-            alpha = None
         logging.debug(f"[{depth}/{self.tree_size}] Max value = {alpha} {len(already_visited)}")
         return alpha
 
