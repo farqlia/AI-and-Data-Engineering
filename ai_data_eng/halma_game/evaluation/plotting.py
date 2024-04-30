@@ -77,17 +77,17 @@ def compare_matches(df, stat, var):
     plt.legend()
 
 
-def compare_algorithms(df, stat, var, depths):
+def compare_algorithms(df, stat, var, depths, names):
     vars = ['depth', 'algorithm']
     _df = df.loc[stat, [var, *vars]].groupby(vars).mean().reset_index().sort_values(by=['algorithm', 'depth'])
     _df = _df.loc[_df['depth'].isin(depths)]
     positions = np.arange(len(_df))  # number of matches to compare
     bar_width = 0.35
 
-    bars1 = plt.bar(positions - bar_width / 2, _df.loc[_df['algorithm'] == 'alphabeta', var], bar_width,
-                    color='skyblue', label='alphabeta')
-    bars2 = plt.bar(positions + bar_width / 2, _df[_df['algorithm'] == 'minmax', var], bar_width, color='salmon',
-                    label='White')
+    bars1 = plt.bar(positions - bar_width / 2, _df.loc[_df['algorithm'] == names[0], var], bar_width,
+                    color='skyblue', label=names[0])
+    bars2 = plt.bar(positions + bar_width / 2, _df[_df['algorithm'] == names[1], var], bar_width, color='salmon',
+                    label=names[1])
 
     plt.xticks(positions, depths)
     plt.xlabel('Depth')

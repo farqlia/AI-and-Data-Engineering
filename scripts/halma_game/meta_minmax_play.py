@@ -10,7 +10,7 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 from multiprocessing import Process
 
 if __name__ == "__main__":
-    depth = 4
+    depth = 2
     match_params = [
         {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=MinMax)},
@@ -26,7 +26,7 @@ if __name__ == "__main__":
                           'algorithm': partial(MetaSearch, alg_init=MinMax)}}
     ]
     processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
-                 for params in match_params][:1]
+                 for params in match_params]
     for p in processes:
         p.start()
     for p in processes:
