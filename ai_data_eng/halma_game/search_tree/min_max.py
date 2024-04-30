@@ -16,7 +16,7 @@ class MinMax(SearchAlgorithm):
         self.best_move = None
         self.name = "minmax"
 
-    def _search(self, game_repr: GameRepresentation, player: Player)-> Tuple[Move, float]:
+    def _search(self, game_repr: GameRepresentation, player: Player) -> Tuple[Move, float]:
         best_val = self.minmax_search(game_repr, player, 0, set(self.forbidden_nodes))
         logging.info(f"Best value: {best_val:.2f}")
         best_move = self.best_move

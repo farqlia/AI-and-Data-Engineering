@@ -41,19 +41,6 @@ class StaticWeightsPlayer(Player):
                 value -= self.depth_value(point)
         return value
 
-    def sum_opponent_weights(self, game_repr: GameRepresentation):
-        value = 0
-        opponent = self.opponent()
-        mult = (-1 if opponent == PLAYER.WHITE else 1)
-        for point in game_repr.get_occupied_fields(opponent):
-            value += mult * self.weights[point[0]][point[1]]
-            camp = game_repr.in_camp(*point)
-            if camp == self.camp:
-                value += self.opp_depth_value(point)
-            elif camp == self.opponent_camp:
-                value -= self.depth_value(point)
-        return value
-
     def evaluate_point(self, point, game_repr: GameRepresentation):
         value = 0
         mult = (-1 if self.flag == PLAYER.WHITE else 1)
