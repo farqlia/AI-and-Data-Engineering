@@ -1,1 +1,5 @@
 /data
+.idea
+.venv
+.vscode
+ai_data_eng_prediction.egg-info
