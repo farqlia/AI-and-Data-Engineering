@@ -49,7 +49,7 @@ class AlphaBeta(SearchAlgorithm):
             value = self.alphabeta_search(game_repr, player, depth + 1, already_visited, alpha, beta)
             # None is if the node is invalid
             self.tree_size += 1
-            if value >= alpha:
+            if value > alpha:
                 alpha = value
                 if depth == 0:
                     self.best_move = (field_from, field_to)

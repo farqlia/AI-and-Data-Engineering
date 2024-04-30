@@ -50,6 +50,7 @@ class MinMax(SearchAlgorithm):
         max_value = -sys.maxsize + 1
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             game_repr.move(field_from, field_to)
+            # Do not visit the state if it was already visited
             if to_be_visited(game_repr.get_board(), already_visited):
                 # logging.debug(f"Try move  {field_from} -> {field_to}")
                 value = self.minmax_search(game_repr, player, depth + 1, already_visited)

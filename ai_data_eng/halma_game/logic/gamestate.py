@@ -1,3 +1,4 @@
+import logging
 from typing import Union, List
 
 from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP, Field, Board
@@ -102,6 +103,7 @@ class GameState(GameRepresentation):
         """
 
         if not self._validate_move(field_from, field_to):
+            logging.warning(f"{self.moving_player()} is illegal: {field_from} -> {field_to}")
             return False
 
         self._apply_move(field_from, field_to)

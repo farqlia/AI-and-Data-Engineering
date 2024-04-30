@@ -27,9 +27,12 @@ strategy_player = {
 }
 
 
-def read_game_state_from_file(dir_path: Path, steps: int) -> GameRepresentation:
-    player_black = pd.read_csv(dir_path / 'PLAYER.BLACK', header=None, sep=';')
-    player_white = pd.read_csv(dir_path / 'PLAYER.WHITE', header=None, sep=';')
+def read_game_state_from_file(dir_path: Path, date_prefix: str, steps: int) -> GameRepresentation:
+    files = os.listdir(dir_path)
+    player_black = pd.read_csv(dir_path / [f for f in files if f.endswith(f'{date_prefix}-PLAYER.BLACK')][0],
+                                       header=None, sep=';')
+    player_white = pd.read_csv(dir_path / [f for f in files if f.endswith(f'{date_prefix}-PLAYER.WHITE')][0],
+                                       header=None, sep=';')
     engine = Engine()
     game_repr = GameState(engine)
     for i in range(steps):
@@ -63,15 +66,6 @@ def play_match(player_black_params, player_white_params, guiInit, match_dir_suff
     gui.run()
 
 
-def replay_match(match_dir, guiInit):
-    engine = Engine()
-    game_repr = GameState(engine)
-
-    game_adapter = GameFromFileAdapter(game_repr, match_dir)
-    gui = guiInit(game_adapter)
-    gui.run()
-
-
 def save_match_info(match_dir, player_black: Player, player_white: Player):
     with open(match_dir / 'info', mode='w') as f:
         f.write("player_flag;alg;depth;strategy")
@@ -79,20 +73,8 @@ def save_match_info(match_dir, player_black: Player, player_white: Player):
             f.write(f"{player.flag};{player.search_alg.name};{player.search_alg.search_depth};{player}")
 
 
-def continue_match(dir_path: Path, steps: int, player_black_params, player_white_params, guiInit):
-    game_repr = read_game_state_from_file(dir_path, steps)
-    player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
-                                                                    player_black_params['algorithm'](
-                                                                        search_depth=player_black_params[
-                                                                            'search_depth']))
-    player_white = strategy_player[player_white_params['strategy']](PLAYER.WHITE,
-                                                                    player_white_params['algorithm'](
-                                                                        search_depth=player_white_params[
-                                                                            'search_depth']))
-    player_white.update_by_move(game_repr)
-    player_black.update_by_move(game_repr)
-    game_adapter = GameLiveUiAdapter(game_repr, player_black, player_white,
-                                 dir_path)
-    game_adapter.setup()
+def replay_match(dir_path: Path, date_prefix:str, steps: int, guiInit):
+    game_repr = read_game_state_from_file(dir_path, date_prefix, steps)
+    game_adapter = GameFromFileAdapter(game_repr, dir_path, date_prefix)
     gui = guiInit(game_adapter)
     gui.run()
