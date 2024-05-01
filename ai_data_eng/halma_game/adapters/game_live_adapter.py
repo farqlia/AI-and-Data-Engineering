@@ -27,6 +27,7 @@ class GameLiveUiAdapter(GameAdapter):
         date_suffix = datetime.datetime.today().strftime("%d-%H%M")
         self.save_dir = save_dir / f'{self.player1.strategy}-{self.player2.strategy}'
         os.makedirs(self.save_dir, exist_ok=True)
+        print(self.save_dir)
         self.match_file = self.save_dir / f'{date_suffix}-stats'
         self.files = {self.player1.flag: self.save_dir / f'{date_suffix}-{self.player1.flag}',
                       self.player2.flag: self.save_dir / f'{date_suffix}-{self.player2.flag}'}
