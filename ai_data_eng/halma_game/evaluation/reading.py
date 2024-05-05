@@ -14,7 +14,7 @@ def get_configuration(match_dir, date_prefix):
     elements = str(match_dir).split('\\')
     strategies, depths, algorithms = elements[-1].split('-'), elements[-2].split('-'), elements[-3].split('-')
     if len(algorithms) > 2:
-        algorithms = ['-'.join(algorithms[:2]), '-'.join(algorithms[2:])]
+        algorithms = [algorithms[1], algorithms[3]]
     if os.path.exists(match_dir / f'{date_prefix}-stats'):
         match_results = pd.read_csv(match_dir / f'{date_prefix}-stats', sep=';', names=['Total moves', 'Winner'])
     else:

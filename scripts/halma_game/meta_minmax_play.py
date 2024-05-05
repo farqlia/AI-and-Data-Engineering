@@ -10,20 +10,24 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 from multiprocessing import Process
 
 if __name__ == "__main__":
-    depth = 2
+    depth = 1
     match_params = [
-        {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
+        {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=MinMax)},
          'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                             'algorithm': partial(MetaSearch, alg_init=MinMax)}},
         {'player_white': {'strategy': STRATEGY.DISTANCE, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=MinMax)},
-         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': depth,
+         'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=MinMax)}},
         {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=MinMax)},
-         'player_black': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
+         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=MinMax)}}
     ]
-    params = match_params[2]
-    play_match(params['player_black'], params['player_white'], NoUI)
+    processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
+                 for params in match_params]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     ]
     dir_path = Path('../../data/halma/minmax-minmax/3-3/')
     processes = [Process(target=continue_match, args=(params['player_black'], params['player_white'],
-                                                      dir_path, params['date_prefix'], 24, NoUI))
+                                                      dir_path, params['date_prefix'], 28, NoUI))
                  for params in match_params]
     for p in processes:
         p.start()

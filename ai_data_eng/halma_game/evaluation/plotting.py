@@ -16,12 +16,12 @@ def plot_compare_two_players(df1, df2, var, colors=('orange', 'blue'), line_styl
 
     ax1.plot(moves, df1[var], color=colors[0], linestyle=line_styles[0], label=df1.player)
     ax1.set_xlabel('Move')
-    ax1.set_ylabel(var)
+    ax1.set_ylabel(f"{var} ({df1.player})")
 
     moves = np.arange(len(df2))
     ax2 = ax1.twinx()
     ax2.plot(moves, df2[var], color=colors[1], linestyle=line_styles[1], label=df2.player)
-    ax2.set_ylabel(var)
+    ax2.set_ylabel(f"{var} ({df2.player})")
 
     fig.legend()
 

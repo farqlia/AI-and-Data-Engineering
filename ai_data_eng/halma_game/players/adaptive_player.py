@@ -26,5 +26,5 @@ class AdaptivePlayer(Player):
         self.strategy_chooser = change_strategy_on_round
 
     def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
-        logging.warning(f"Strategy: {self.strategy_chooser(game_repr)}")
+        # logging.warning(f"Strategy: {self.strategy_chooser(game_repr)}")
         return self.strategies[self.strategy_chooser(game_repr)].evaluate(game_repr)

@@ -11,19 +11,19 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 from multiprocessing import Process
 
 if __name__ == "__main__":
-    search_depth = 1
+    search_depth = 2
     match_params = [
-        {'player_white': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': search_depth,
+        {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': search_depth,
                             'algorithm': AlphaBeta},
          'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': search_depth,
                             'algorithm': AlphaBeta}},
         {'player_white': {'strategy': STRATEGY.DISTANCE, 'search_depth': search_depth,
                           'algorithm': AlphaBeta},
-         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': search_depth,
+         'player_black': {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': search_depth,
                           'algorithm': AlphaBeta}},
         {'player_white': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': search_depth,
                           'algorithm': AlphaBeta},
-         'player_black': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': search_depth,
+         'player_black': {'strategy': STRATEGY.DISTANCE, 'search_depth': search_depth,
                           'algorithm': AlphaBeta}}
     ]
     processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
