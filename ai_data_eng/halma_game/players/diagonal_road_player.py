@@ -1,0 +1,58 @@
+import sys
+from typing import Union
+
+from ai_data_eng.halma_game.globals import PLAYER, STRATEGY
+from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
+from ai_data_eng.halma_game.players.player import Player
+from ai_data_eng.halma_game.search_tree.search_algorithm import SearchAlgorithm
+
+
+class DiagonalRoadPlayer(Player):
+
+    def __init__(self, plr: PLAYER, search_alg: SearchAlgorithm):
+        super().__init__(plr, search_alg,
+                         STRATEGY.DIAGONAL_WEIGHTS)
+        self.weights = [[0.0 for _ in range(16)] for _ in range(16)]
+        self.set_weights()
+
+    def set_weights(self):
+        unit_val = 1 / 16
+        weight = 0
+        for i in range(16):
+            weight += unit_val
+            for j in range(i + 1):
+                self.weights[15 - i + j][j] = weight
+        weight = 1
+        for i in range(14, -1, -1):
+            weight -= unit_val
+            for j in range(i + 1):
+                self.weights[j][15 - i + j] = weight
+
+    def get_weights(self):
+        return self.weights
+
+    def sum_weights(self, game_repr: GameRepresentation):
+        value = 0
+        mult = (-1 if self.flag == PLAYER.WHITE else 1)
+        for point in game_repr.get_occupied_fields(self.flag):
+            value += mult * self.weights[point[0]][point[1]]
+            camp = game_repr.in_camp(*point)
+            if camp == self.opponent_camp:
+                value += self.opp_depth_value(point)
+            elif camp == self.camp:
+                value -= self.depth_value(point)
+        return value
+
+    def evaluate_point(self, point, game_repr: GameRepresentation):
+        value = 0
+        mult = (-1 if self.flag == PLAYER.WHITE else 1)
+        value += mult * self.weights[point[0]][point[1]]
+        camp = game_repr.in_camp(*point)
+        if camp == self.opponent_camp:
+            value += self.opp_depth_value(point)
+        elif camp == self.camp:
+            value -= self.depth_value(point)
+        return value
+
+    def evaluate(self, game_repr: GameRepresentation) -> Union[float, None]:
+        return self.sum_weights(game_repr)

@@ -11,7 +11,9 @@ class STRATEGY(Enum):
     STATIC_WEIGHTS = 'static_weights'
     ADAPTIVE_WEIGHTS = 'adaptive_weights'
     DISTANCE = 'distance'
+    DIAGONAL_WEIGHTS = 'diagonal weights'
     NONE = 'none'
+    ADAPTIVE_STRATEGY = 'adaptive strategy'
 
 
 class STATE(Enum):

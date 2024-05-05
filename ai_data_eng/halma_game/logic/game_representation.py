@@ -60,3 +60,6 @@ class GameRepresentation(ABC):
                 if state_board[i][j].value == plr_flag.value:
                     fields.append((i, j))
         return fields
+
+    def round_number(self) -> int:
+        return self.move_number() // 2
