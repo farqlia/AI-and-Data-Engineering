@@ -10,6 +10,10 @@ def match_name(match_dir):
     return '_'.join(str(match_dir).split('\\')[-3:])
 
 
+def is_finished(match):
+    return match[0].winner != 'None'
+
+
 def get_configuration(match_dir, date_prefix):
     elements = str(match_dir).split('\\')
     strategies, depths, algorithms = elements[-1].split('-'), elements[-2].split('-'), elements[-3].split('-')
@@ -55,4 +59,7 @@ def read_match(match_dir: Path, date_prefix: str=None):
     for df in [player_black, player_white]:
         df['Jump size'] = df.apply(lambda x: jump_size(x.iloc[0], x.iloc[1]), axis=1)
     add_metadata([player_black, player_white], ['black', 'white'], match_dir, date_prefix)
+    if player_black.winner != 'None':
+        for df in [player_black, player_white]:
+            df.iloc[-1, 4] = df.iloc[-2, 4]
     return player_black, player_white

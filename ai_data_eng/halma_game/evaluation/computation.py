@@ -3,6 +3,7 @@ import pandas as pd
 
 from ai_data_eng.halma_game.utils import split
 
+
 def jump_size(move_from, move_to):
     y_f, x_f = split(move_from)
     y_t, x_t = split(move_to)

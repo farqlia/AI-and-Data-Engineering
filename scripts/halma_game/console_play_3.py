@@ -10,7 +10,7 @@ from ai_data_eng.halma_game.ui.tkinter_ui import HalmaGUI
 
 if __name__ == "__main__":
     player_white = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': 4,
-                    'algorithm': partial(MetaSearch, alg_init=AlphaBeta)}
+                    'algorithm': partial(MetaSearch, alg_init=MinMax)}
     player_black = {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': 4,
-                    'algorithm': partial(MetaSearch, alg_init=AlphaBeta)}
+                    'algorithm': partial(MetaSearch, alg_init=MinMax)}
     play_match(player_white, player_black, NoUI)
