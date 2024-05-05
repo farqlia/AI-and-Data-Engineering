@@ -31,7 +31,7 @@ class MinMax(SearchAlgorithm):
         for (field_from, field_to) in generate_candidate_moves(game_repr, game_repr.moving_player()):
             game_repr.move(field_from, field_to)
             # logging.debug(f"Try move {field_from} -> {field_to}")
-            if to_be_visited(game_repr.get_board(), already_visited) :
+            if to_be_visited(game_repr.get_board(), already_visited):
                 value = self.minmax_search(game_repr, player, depth + 1, already_visited)
                 if value is not None:
                     min_value = min(min_value, value)

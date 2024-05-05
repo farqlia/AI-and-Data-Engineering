@@ -19,20 +19,21 @@ class GameLiveUiAdapter(GameAdapter):
 
     def __init__(self, game_repr: GameRepresentation,
                  player1: Player, player2: Player,
-                 save_dir: Path):
+                 save_dir: Path, date_prefix=None):
         self.game_repr = game_repr
         self.player1 = player1
         self.player2 = player2
         self.current_player = self.player1
-        date_suffix = datetime.datetime.today().strftime("%d-%H%M")
-        self.save_dir = save_dir / f'{self.player1.strategy}-{self.player2.strategy}'
-        os.makedirs(self.save_dir, exist_ok=True)
-        print(self.save_dir)
-        self.match_file = self.save_dir / f'{date_suffix}-stats'
-        self.files = {self.player1.flag: self.save_dir / f'{date_suffix}-{self.player1.flag}',
-                      self.player2.flag: self.save_dir / f'{date_suffix}-{self.player2.flag}'}
+        self.save_dir = save_dir
+        self.date_prefix = date_prefix
 
     def setup(self):
+        if self.date_prefix is None:
+            self.date_prefix = datetime.datetime.today().strftime("%d-%H%M")
+        print(self.save_dir)
+        self.match_file = self.save_dir / f'{self.date_prefix}-stats'
+        self.files = {self.player1.flag: self.save_dir / f'{self.date_prefix}-{self.player1.flag}',
+                      self.player2.flag: self.save_dir / f'{self.date_prefix}-{self.player2.flag}'}
         self.game_playing = GamePlaying(self.game_repr, self.player1, self.player2)
 
     def next(self):

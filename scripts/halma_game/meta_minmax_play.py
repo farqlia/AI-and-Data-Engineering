@@ -25,9 +25,5 @@ if __name__ == "__main__":
          'player_black': {'strategy': STRATEGY.ADAPTIVE_WEIGHTS, 'search_depth': depth,
                           'algorithm': partial(MetaSearch, alg_init=MinMax)}}
     ]
-    processes = [Process(target=play_match, args=(params['player_black'], params['player_white'], NoUI))
-                 for params in match_params]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    params = match_params[2]
+    play_match(params['player_black'], params['player_white'], NoUI)
