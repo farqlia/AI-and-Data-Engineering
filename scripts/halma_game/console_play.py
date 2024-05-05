@@ -13,6 +13,6 @@ if __name__ == "__main__":
     depth = 1
     player_white = {'strategy': STRATEGY.ADAPTIVE_STRATEGY, 'search_depth': depth,
                     'algorithm': MinMax}
-    player_black = {'strategy': STRATEGY.STATIC_WEIGHTS, 'search_depth': depth,
+    player_black = {'strategy': STRATEGY.NONE, 'search_depth': depth,
                     'algorithm': MinMax}
     play_match(player_white, player_black, HalmaGUI)

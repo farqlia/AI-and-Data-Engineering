@@ -15,6 +15,7 @@ from ai_data_eng.halma_game.players.adaptive_weights_player import AdaptiveWeigh
 from ai_data_eng.halma_game.players.console_player import ConsolePlayer
 from ai_data_eng.halma_game.players.diagonal_road_player import DiagonalRoadPlayer
 from ai_data_eng.halma_game.players.distance_player import DistancePlayer
+from ai_data_eng.halma_game.players.no_strategy_player import NoStrategyPlayer
 from ai_data_eng.halma_game.players.player import Player
 from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
 from ai_data_eng.halma_game.adapters.game_from_file_adapter import GameFromFileAdapter
@@ -25,7 +26,8 @@ strategy_player = {
     STRATEGY.STATIC_WEIGHTS: StaticWeightsPlayer,
     STRATEGY.ADAPTIVE_WEIGHTS: AdaptiveWeightsPlayer,
     STRATEGY.DISTANCE: DistancePlayer,
-    STRATEGY.NONE: ConsolePlayer,
+    STRATEGY.NONE: NoStrategyPlayer,
+    STRATEGY.CONSOLE_PLAYER: ConsolePlayer,
     STRATEGY.DIAGONAL_WEIGHTS: DiagonalRoadPlayer,
     STRATEGY.ADAPTIVE_STRATEGY: AdaptivePlayer
 }

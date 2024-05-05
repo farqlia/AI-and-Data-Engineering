@@ -13,6 +13,7 @@ class STRATEGY(Enum):
     DISTANCE = 'distance'
     DIAGONAL_WEIGHTS = 'diagonal weights'
     NONE = 'none'
+    CONSOLE_PLAYER = 'console'
     ADAPTIVE_STRATEGY = 'adaptive strategy'
 
 

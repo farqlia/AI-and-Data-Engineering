@@ -2,4 +2,4 @@
 .idea
 .venv
 .vscode
-ai_data_eng_prediction.egg-info
+ai_data_eng_prediction.egg-info/*
