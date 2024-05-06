@@ -6,12 +6,23 @@ import pandas as pd
 from ai_data_eng.halma_game.evaluation.computation import jump_size
 
 
+def match_info(match) -> str:
+    black, white = match
+    return (f"Match between {black.strategy} VS {white.strategy}, "
+            f"where winner is {black.winner}")
+
 def match_name(match_dir):
     return '_'.join(str(match_dir).split('\\')[-3:])
 
 
 def is_finished(match):
     return match[0].winner != 'None'
+
+
+def get_winner_name(winner):
+    if winner == 'None':
+        return 'None'
+    return 'Black' if winner.endswith('BLACK') else 'White'
 
 
 def get_configuration(match_dir, date_prefix):
@@ -31,7 +42,7 @@ def get_configuration(match_dir, date_prefix):
             'strategy': strategies[1].split('.')[1].lower(), 'depth': depths[1], 'algorithm': algorithms[1]
         },
         'match': match_name(match_dir),
-        'winner': match_results.loc[0, 'Winner']
+        'winner': get_winner_name(match_results.loc[0, 'Winner'])
     }
 
     return config

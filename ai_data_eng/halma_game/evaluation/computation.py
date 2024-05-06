@@ -10,7 +10,7 @@ def jump_size(move_from, move_to):
     return abs(y_f-y_t) + abs(x_f - x_t)
 
 
-def get_match_stats(player_white, player_black):
+def get_match_stats(player_black, player_white):
     total_stats = []
     for (df, player) in zip([player_black, player_white], ['Black', 'White']):
         stats_df = df[['Compute time', 'Tree size', 'Eval value', 'Jump size']].agg([np.mean, np.sum, np.max, np.min])

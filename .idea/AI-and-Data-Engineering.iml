@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/inspectionProfiles" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.11 (AI-and-Data-Engineering)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

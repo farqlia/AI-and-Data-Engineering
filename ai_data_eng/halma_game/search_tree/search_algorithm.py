@@ -16,7 +16,7 @@ def generate_candidate_moves(game_repr: GameRepresentation, plr_flag: PLAYER):
 def to_be_visited(board: Board, already_visited: Set[int]):
     pos_hash = hash_board(board)
     if pos_hash in already_visited:
-        # logging.debug(f"{pos_hash} already visited")
+        #logging.debug(f"{pos_hash} already visited")
         return False
     # if len(already_visited) >= 10_000:
       #   already_visited.clear()
