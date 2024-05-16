@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Optional
 
-import schema
 import schema as s
 from experta import *
 from experta.fact import *
@@ -11,11 +10,13 @@ from ai_data_eng.reasoning_system.coffees import *
 
 class Actions(Enum):
     MAKE_COFFEE = "make coffee"
+    FILL_WATER = "fill water"
+    SHOW_FACTS = "show facts"
     CONSERVE = "conserve"
     STOP = "stop"
 
 
-actions = [Actions.MAKE_COFFEE, Actions.CONSERVE, Actions.STOP]
+actions = [Actions.MAKE_COFFEE, Actions.FILL_WATER, Actions.SHOW_FACTS, Actions.CONSERVE, Actions.STOP]
 
 
 class CoffeeMachine(Fact):
@@ -24,16 +25,18 @@ class CoffeeMachine(Fact):
 
 
 def from_type(coffee_type: CoffeeType):
-    return Coffee(name=coffee_type.name, water_use=coffee_type.water_use, needs_milk=coffee_type.needs_milk)
+    return Coffee(name=coffee_type.name,
+                  water_use=coffee_type.water_use,
+                  milk_use=coffee_type.milk_use)
 
 
 class Coffee(Fact):
-    needs_milk = Field(bool, mandatory=True)
-    water_use = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=1.0)
+    milk_use = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=0.0)
+    water_use = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=0.2)
     name = Field(str, mandatory=True)
 
 
-coffees = [latte, espresso]
+coffees = [latte, espresso, flat_white]
 
 
 class Component(Fact):
@@ -44,7 +47,6 @@ class Component(Fact):
 class Water(Component):
     """A fact representing the water component."""
     level = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=1.0)
-    threshold = 0.2
     # This should be set at the beginning
     water_hardness = Field(s.Or("soft", "medium", "hard"), default="medium")
 
@@ -52,7 +54,6 @@ class Water(Component):
 class Milk(Component):
     """A fact representing the milk component."""
     level = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=1.0)
-    threshold = 0.2
     # Add state here too?
 
 
@@ -114,34 +115,53 @@ class CoffeeMachineRules(KnowledgeEngine):
         yield Heater(temperature=0)
         yield Nozzle()
 
-    @Rule(AND(CoffeeMachine(),
-              Water(level=P(lambda x: x <= Water.threshold))))
-    def add_water(self):
+    @Rule(CoffeeMachine(),
+          AS.w << Water(level=MATCH.water_l),
+          Coffee(water_use=MATCH.water_u),
+          TEST(lambda water_l, water_u: water_u > water_l))
+    def add_water(self, w):
         print("Add water to the coffee machine.")
+        self.retract(w)
+        self.declare(Water(level=1.0))
 
-    @Rule(AND(CoffeeMachine(),
-              Milk(amount=P(lambda x: x <= Milk.threshold))))
-    def add_milk(self):
+    @Rule(CoffeeMachine(),
+          AS.m << Milk(level=MATCH.milk_l),
+          Coffee(milk_use=MATCH.milk_u),
+          TEST(lambda milk_l, milk_u: milk_u > milk_l))
+    def add_milk(self, m):
         print("Add milk to the coffee machine.")
+        self.retract(m)
+        self.declare(Milk(level=1.0))
 
-    @Rule(AND(CoffeeMachine(),
-              Grinder(filled=False)))
+    @Rule(CoffeeMachine(),
+          Brew(status="ready"), Grinder(filled=False))
     def fill_grinder(self):
         print("Fill grinder with coffee beans.")
 
-    @Rule(AND(CoffeeMachine(),
-              Heater(temperature=P(lambda x: x >= Heater.upper_threshold))))
+    @Rule(CoffeeMachine(),
+              Heater(temperature=P(lambda x: x >= Heater.upper_threshold)))
     def heater_too_hot(self):
         print("Heater is too hot.")
 
-    @Rule(CoffeeMachine(), Brew(status="ready"),
-          AS.c << Coffee(name=MATCH.n),
+    @Rule(CoffeeMachine(), AS.b << Brew(status="ready"),
+          Grinder(filled=True),
+          AS.m << Milk(level=MATCH.milk_l),
+          AS.w << Water(level=MATCH.water_l),
+          AS.c << Coffee(name=MATCH.n, water_use=MATCH.water_u,
+                         milk_use=MATCH.milk_u),
+          TEST(lambda water_l, water_u: water_u <= water_l),
+          TEST(lambda milk_l, milk_u: milk_u <= milk_l),
           AS.f1 << UserInput(action=Actions.MAKE_COFFEE))
-    def start_brewing(self, c, n, f1):
+    def start_brewing(self, c, n, f1, m, w, b, milk_l, milk_u, water_l, water_u):
         print(f"Start brewing {n}.")
         # check whether all conditions are met to brew coffee
         self.retract(f1)
         self.retract(c)
+        self.retract(m)
+        self.retract(w)
+        self.retract(b)
+        self.declare(Water(level=water_l - water_u))
+        self.declare(Milk(level=milk_l - milk_u))
 
     @Rule(AND(CoffeeMachine(), Nozzle(status="blocked")))
     def clear_nozzle(self):
@@ -151,6 +171,13 @@ class CoffeeMachineRules(KnowledgeEngine):
     def require_user_action(self):
         user_action = get_user_input()
         self.declare(UserInput(action=user_action))
+
+    @Rule(CoffeeMachine(),
+          AS.ui << UserInput(action=Actions.SHOW_FACTS))
+    def show_facts(self, ui):
+        print("Showing facts...")
+        print(self.facts)
+        self.retract(ui)
 
     @Rule(CoffeeMachine(),
           AS.f1 << UserInput(action=Actions.MAKE_COFFEE))
