@@ -2,14 +2,14 @@ import copy
 
 import pytest
 
-from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.halmaengine import HalmaEngine
 from ai_data_eng.halma_game.logic.gamestate import GameState
 from ai_data_eng.halma_game.utils import concat_board_state
 
 
 @pytest.fixture()
 def engine():
-    return Engine()
+    return HalmaEngine()
 
 @pytest.fixture()
 def game_state(engine):

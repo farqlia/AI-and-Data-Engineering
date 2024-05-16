@@ -2,13 +2,13 @@ import logging
 from typing import Union, List
 
 from ai_data_eng.halma_game.globals import PLAYER, STATE, CAMP, Field, Board
-from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.halmaengine import HalmaEngine
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 
 
 class GameState(GameRepresentation):
 
-    def __init__(self, engine: Engine):
+    def __init__(self, engine: HalmaEngine):
         """! Konstruktor klasy GameInterface.
 
         @param engine Obiekt klasy Engine.

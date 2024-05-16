@@ -54,6 +54,10 @@ class HalmaGUI:
             logging.info("Match is finished")
             messagebox.showinfo("Information", f"The winner is {self.winner}")
 
+    def play_automatically(self):
+        while self.winner is None:
+            self.forward_gui()
+
     def play_round(self):
         self.game_adapter.next()
         self.winner = self.game_adapter.is_finished()
@@ -124,6 +128,8 @@ class HalmaGUI:
         # self.back_button.pack(side=tk.LEFT, padx=5)
         self.forward_button = tk.Button(self.master, text="Next", command=self.navigate_forward)
         self.forward_button.grid(row=l_r, column=2, columnspan=1)
+        self.play_button = tk.Button(self.master, text="Play", command=self.play_automatically)
+        self.play_button.grid(row=l_r, column=3, columnspan=1)
         # self.forward_button.pack(side=tk.LEFT, padx=5)
         self.player_label = tk.Label(self.master, text=f"Player: {self.game_adapter.moving_player()}")
         self.player_label.grid(row=l_r, column=6, columnspan=4)

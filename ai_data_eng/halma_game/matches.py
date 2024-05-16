@@ -7,7 +7,7 @@ import pandas as pd
 
 from ai_data_eng.halma_game.globals import PLAYER, HALMA_DIR
 from ai_data_eng.halma_game.globals import STRATEGY
-from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.halmaengine import HalmaEngine
 from ai_data_eng.halma_game.logic.game_representation import GameRepresentation
 from ai_data_eng.halma_game.logic.gamestate import GameState
 from ai_data_eng.halma_game.players.adaptive_player import AdaptivePlayer
@@ -39,7 +39,7 @@ def read_game_state_from_file(dir_path: Path, date_prefix: str, steps: int) -> G
                                        header=None, sep=';')
     player_white = pd.read_csv(dir_path / [f for f in files if f.endswith(f'{date_prefix}-PLAYER.WHITE')][0],
                                        header=None, sep=';')
-    engine = Engine()
+    engine = HalmaEngine()
     game_repr = GameState(engine)
     for i in range(min(steps, len(player_black))):
         game_repr.move(split(player_black.iloc[i, 0]),
@@ -52,7 +52,7 @@ def read_game_state_from_file(dir_path: Path, date_prefix: str, steps: int) -> G
 
 
 def play_match(player_black_params, player_white_params, guiInit, match_dir_suffix=''):
-    engine = Engine()
+    engine = HalmaEngine()
     game_repr = GameState(engine)
     player_black = strategy_player[player_black_params['strategy']](PLAYER.BLACK,
                                                                     player_black_params['algorithm'](

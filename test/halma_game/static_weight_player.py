@@ -1,5 +1,5 @@
 from ai_data_eng.halma_game.globals import PLAYER
-from ai_data_eng.halma_game.logic.engine import Engine
+from ai_data_eng.halma_game.logic.halmaengine import HalmaEngine
 from ai_data_eng.halma_game.logic.gamestate import GameState
 from ai_data_eng.halma_game.players.diagonal_road_player import DiagonalRoadPlayer
 from ai_data_eng.halma_game.players.static_weights_player import StaticWeightsPlayer
@@ -8,21 +8,21 @@ from ai_data_eng.halma_game.utils import print_board
 
 
 def test_weight_init_static_player():
-    engine = Engine()
+    engine = HalmaEngine()
     game_repr = GameState(engine)
     player_black = StaticWeightsPlayer(PLAYER.BLACK, MinMax(3))
     print_board(player_black.weights)
 
 
 def test_weight_init_diagonal_player():
-    engine = Engine()
+    engine = HalmaEngine()
     game_repr = GameState(engine)
     player_black = DiagonalRoadPlayer(PLAYER.BLACK, MinMax(3))
     print_board(player_black.weights)
 
 
 def test_weight_initialization():
-    engine = Engine()
+    engine = HalmaEngine()
     game_repr = GameState(engine)
     player_black = StaticWeightsPlayer(PLAYER.BLACK, MinMax(3))
     player_white = StaticWeightsPlayer(PLAYER.WHITE, MinMax(3))

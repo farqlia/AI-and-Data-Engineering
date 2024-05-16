@@ -2,7 +2,7 @@ from ai_data_eng.halma_game.globals import STATE, PLAYER, Board, CAMP
 from ai_data_eng.halma_game.utils import pos_on_board, in_camp
 
 
-class Engine:
+class HalmaEngine:
 
     def __init__(self):
         self._board: Board = [[STATE.EMPTY] * 16 for _ in range(16)]
