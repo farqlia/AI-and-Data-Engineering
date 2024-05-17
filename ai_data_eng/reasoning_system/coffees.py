@@ -3,6 +3,7 @@ from dataclasses import dataclass
 HEATING_TEMPERATURE = 70
 SCALE_AMOUNT = 0.1
 
+
 @dataclass
 class CoffeeType:
     name: str
