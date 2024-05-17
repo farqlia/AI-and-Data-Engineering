@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 from typing import Optional
 
@@ -15,6 +16,7 @@ class Actions(Enum):
     FILL_BEANS = "fill beans"
     SHOW_FACTS = "show facts"
     TROUBLESHOOT = "troubleshoot"
+    CLEAR_NOZZLE = "clear nozzle"
     DESCALE = "descale"
     STOP = "stop"
 
@@ -24,8 +26,8 @@ class Problems(Enum):
 
 
 ACTIONS = [Actions.MAKE_COFFEE, Actions.FILL_WATER,
-           Actions.SHOW_FACTS, Actions.DESCALE, Actions.TROUBLESHOOT,
-           Actions.STOP]
+           Actions.SHOW_FACTS, Actions.DESCALE, Actions.CLEAR_NOZZLE,
+           Actions.TROUBLESHOOT, Actions.STOP]
 
 
 class CoffeeMachine(Fact):
@@ -161,6 +163,7 @@ class CoffeeMachineRules(KnowledgeEngine):
         self.declare(Brew(status="ready"))
 
     @Rule(CoffeeMachine(), AS.b << Brew(status="ready"),
+          AS.mn << MilkNozzle(),
           AS.g << Grinder(level=MATCH.beans_l),
           AS.m << Milk(level=MATCH.milk_l),
           AS.w << Water(level=MATCH.water_l, scale=MATCH.scale),
@@ -169,7 +172,7 @@ class CoffeeMachineRules(KnowledgeEngine):
           TEST(lambda milk_l, milk_u: milk_u <= milk_l),
           TEST(lambda beans_l, beans_u: beans_u <= beans_l),
           UserInput(action=P(lambda x: x == Actions.MAKE_COFFEE)))
-    def start_brewing(self, c, n, m, w, b, g, milk_l, milk_u, water_l, water_u,
+    def start_brewing(self, mn, n, m, w, b, g, milk_l, milk_u, water_l, water_u,
                       beans_l, beans_u, scale):
         print(f"Start brewing {n}.")
         # check whether all conditions are met to brew coffee
@@ -177,19 +180,25 @@ class CoffeeMachineRules(KnowledgeEngine):
         self.retract(w)
         self.retract(b)
         self.retract(g)
+        self.retract(mn)
         self.declare(Brew(status="done"))
         self.declare(Water(level=water_l - water_u, scale=scale + SCALE_AMOUNT))
+        block = bool(random.random() > 0.1)
+        self.declare(MilkNozzle(status="blocked" if block else "nozzling"))
         self.declare(Milk(level=milk_l - milk_u))
         self.declare(Grinder(level=beans_l - beans_u))
 
     @Rule(CoffeeMachine(), AS.b << Brew(status="done"),
           AS.c << Coffee(name=MATCH.n),
+          AS.mn << MilkNozzle(),
           AS.f1 << UserInput(action=Actions.MAKE_COFFEE))
-    def end_brewing(self, c, n, b, f1):
+    def end_brewing(self, c, n, b, mn, f1):
         print(f"End brewing {n}.")
         self.retract(c)
+        self.retract(mn)
         self.retract(b)
         self.retract(f1)
+        self.declare(MilkNozzle(status="inactive"))
 
     @Rule(CoffeeMachine(),
           AS.w << Water(level=MATCH.water_l),
@@ -241,21 +250,33 @@ class CoffeeMachineRules(KnowledgeEngine):
     def heater_too_hot(self):
         print("Heater is too hot.")
 
+
+
     @Rule(CoffeeMachine(),
           AS.mn << MilkNozzle(),
           OR(
               AND(MilkNozzle(status="blocked"),
-                  Brew(status=MATCH.pro),
-                  TEST(lambda pro: pro == "in progress")),
+                  Brew(status=MATCH.pro)),
               AND(AS.t << TroubleShooting(problem=Problems.MILK_FORTHER, solved=False))
           ), salience=1)
-    def clear_nozzle(self, mn, t, pro="inactive"):
-        if t in self.facts:
+    def require_clear_nozzle(self):
+        print("Before proceeding you need to clear nozzle.")
+        user_action = get_user_input([Actions.CLEAR_NOZZLE, Actions.STOP])
+        if user_action == Actions.CLEAR_NOZZLE:
+            self.declare(UserInput(action=Actions.CLEAR_NOZZLE))
+
+    @Rule(CoffeeMachine(),
+          AS.mn << MilkNozzle(),
+          AS.ui << UserInput(action=Actions.CLEAR_NOZZLE),
+          AS.t << TroubleShooting(), salience=1)
+    def clear_nozzle(self, mn, ui, t=None, pro="inactive"):
+        self.retract(ui)
+        if t:
             self.retract(t)
             self.declare(TroubleShooting(problem=Problems.MILK_FORTHER, solved=True))
         self.retract(mn)
         self.declare(MilkNozzle(status="nozzling" if pro == "in progress" else "inactive"))
-        print("Clear nozzle for dispensing.")
+        print("Nozzle is cleared.")
 
     @Rule(CoffeeMachine(),
           AS.ui << UserInput(action=Actions.SHOW_FACTS))
@@ -293,6 +314,13 @@ class CoffeeMachineRules(KnowledgeEngine):
         else:
             self.retract(ui)
 
+    @Rule(CoffeeMachine(),
+        AS.ui << UserInput(action=Actions.TROUBLESHOOT),
+          AS.t << TroubleShooting(solved=True))
+    def solve_troubleshoot(self, ui, t):
+        print(f"Your problem was solved")
+        self.retract(ui)
+        self.retract(t)
 
 
 if __name__ == "__main__":
