@@ -27,3 +27,12 @@ def filter_maker(level):
         return record.levelno <= level
 
     return filter_log
+
+
+def try_parse_int():
+    while True:
+        try:
+            return int(input("Choice: "))
+        except ValueError:
+            print("Please enter an integer")
+            pass

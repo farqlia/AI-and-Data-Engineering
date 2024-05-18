@@ -11,6 +11,9 @@ from experta.fact import *
 
 from ai_data_eng.reasoning_system.coffees import *
 import logging.config
+
+from ai_data_eng.reasoning_system.utils import try_parse_int
+
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': True,
@@ -38,8 +41,8 @@ class Actions(Enum):
 
 
 class Problems(Enum):
-    MILK_FORTHER = " Insufficient foam is produced when the milk is frothed or milk sprays out of the professional fine foam frother"
-
+    MILK_FROTHER = " Insufficient foam is produced when the milk is frothed or milk sprays out of the professional fine foam frother"
+    COFFEE_DISPOSING = " Coffee only comes out in drips when it is being prepared."
 
 ACTIONS = [Actions.MAKE_COFFEE, Actions.FILL_WATER,
            Actions.SHOW_FACTS, Actions.DESCALE, Actions.CLEAR_NOZZLE,
@@ -118,7 +121,7 @@ def get_user_coffee() -> Optional[Coffee]:
     print("Choose coffee")
     for i, coffee in enumerate(coffees):
         print(f"[{i}] {coffee.name}")
-    cof = int(input("Choice: "))
+    cof = try_parse_int()
     return from_type(coffees[cof]) if 0 <= cof < len(coffees) else None
 
 
@@ -126,8 +129,9 @@ def get_user_input(actions=ACTIONS) -> Actions:
     print("Choose from a set of possible actions")
     for i, action in enumerate(actions):
         print(f"[{i}] {action.value}")
-    act = int(input("Choice: "))
+    act = try_parse_int()
     return actions[act] if 0 <= act < len(actions) else Actions.STOP
+
 
 
 def get_user_problem() -> Optional[Problems]:
@@ -135,7 +139,7 @@ def get_user_problem() -> Optional[Problems]:
     problems = list(Problems.__members__.values())
     for i, problem in enumerate(problems):
         print(f"[{i}] {problem.value}")
-    prob = int(input("Choice: "))
+    prob = try_parse_int()
     return problems[prob] if 0 <= prob < len(problems) else None
 
 
@@ -287,7 +291,7 @@ class CoffeeMachineRules(KnowledgeEngine):
         print("Add water to the coffee machine.")
         self.retract(ui)
         self.modify(w, level=1.0)
-        print(self.facts)
+        # print(self.facts)
 
     @Rule(CoffeeMachine(),
           AS.m << Milk(level=MATCH.milk_l),
@@ -325,8 +329,8 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           OR(AS.mn << MilkNozzle(status="blocked"),
-              AS.t << TroubleShooting(problem=Problems.MILK_FORTHER, solved=False)
-          ), UserInput(action=P(lambda x: x != Actions.CLEAR_NOZZLE)), salience=2)
+              AS.t << TroubleShooting(problem=Problems.MILK_FROTHER, solved=False)
+          ), UserInput(action=~L(Actions.CLEAR_NOZZLE)), salience=2)
     def require_clear_nozzle(self):
         print("Before proceeding you need to clear nozzle.")
         user_action = get_user_input([Actions.CLEAR_NOZZLE, Actions.STOP])
@@ -359,14 +363,19 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           Water(scale=MATCH.scale),
-          # Do not disrupt preparing coffee
-          NOT(UserInput()),
-          TEST(lambda scale: scale >= 1.0))
-    def require_descaling(self):
+          # Do not disrupt preparing coffee,
+          OR(AND(AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
+                 TEST(lambda scale: scale >= 0.8),
+                 UserInput(action=Actions.TROUBLESHOOT)),
+          AND(TEST(lambda scale: scale >= 1.0), NOT(UserInput()))),
+          salience=1)
+    def require_descaling(self, t=None):
         print("Before proceeding you need to descale machine.")
         user_action = get_user_input([Actions.DESCALE, Actions.STOP])
         if user_action == Actions.DESCALE:
             self.declare(UserInput(action=Actions.DESCALE))
+        if t:
+            self.modify(t, solved=True)
 
     @Rule(CoffeeMachine(),
           AS.ui << UserInput(action=Actions.DESCALE),
@@ -374,7 +383,7 @@ class CoffeeMachineRules(KnowledgeEngine):
     def descale(self, w, ui):
         print(f"Descaling ...")
         self.retract(ui)
-        self.modify(w,level=1.0, scale=0.0)
+        self.modify(w, level=1.0, scale=0.0)
 
     @Rule(CoffeeMachine(),
           AS.ui << UserInput(action=Actions.TROUBLESHOOT))
@@ -387,13 +396,26 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
         AS.ui << UserInput(action=Actions.TROUBLESHOOT),
-        AS.ui_2 << UserInput(action=P(lambda x: x != Actions.TROUBLESHOOT), status="done"),
-        AS.t << TroubleShooting(solved=True))
-    def solve_troubleshoot(self, ui, ui_2, t):
+        AS.t << TroubleShooting())
+    def solve_troubleshoot(self, ui, t):
         print(f"Your problem was solved")
         self.retract(t)
-        self.retract(ui_2)
         self.retract(ui)
+
+    @Rule(CoffeeMachine(),
+          AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
+          AS.g << Grinder(degree=P(lambda g_deg: g_deg >= 4)), salience=1)
+    def grinder_level_too_high(self, t):
+        self.modify(t, solved=True)
+        print("Degree of your grinder may be too high. Regulate it next time")
+
+    @Rule(CoffeeMachine(),
+          AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
+          Grinder(degree=P(lambda x: x < 4)),
+          Water(scale=P(lambda x: x < 0.8)), salience=1)
+    def solve_disposing_problem(self):
+        print("No malfunctioning was found. Try using other coffee beans next time")
+
 
 
 if __name__ == "__main__":
