@@ -30,5 +30,5 @@ class MetaSearch(SearchAlgorithm):
         if len(self.queue) > self.queue_size:
             # logging.info(f"Remove {self.queue[0]} from queue")
             self.alg.forbidden_nodes.remove(self.queue.pop(0))
-        # logging.info(f"Queue state = {self.queue}")
+        # logging.info(f"Queue status = {self.queue}")
         # logging.info(f"Forbidden nodes = {self.alg.forbidden_nodes}")

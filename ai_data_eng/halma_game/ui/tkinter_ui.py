@@ -40,7 +40,7 @@ class HalmaGUI:
         self.update_ui()
         self.master.mainloop()
 
-    # This functions should be implemented to show next game state
+    # This functions should be implemented to show next game status
     def navigate_back(self):
         pass
 
