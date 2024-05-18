@@ -1,16 +1,26 @@
 import logging
 import random
+import sys
 from enum import Enum
 from typing import Optional
 
 import schema as s
 from experta import *
 from experta.fact import *
-from ai_data_eng.reasoning_system.utils import configure_logging
+
 
 from ai_data_eng.reasoning_system.coffees import *
+import logging.config
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': True,
+})
+logging.basicConfig(level=logging.DEBUG,  # Set the logging level
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log format
+                    handlers=[logging.StreamHandler(stream=sys.stdout)])  # Set the handler to output to the console
 
-configure_logging(logging.ERROR)
+# Create a logger object
+logger = logging.getLogger(__name__)
 
 
 class Actions(Enum):
@@ -60,7 +70,7 @@ def require_milk(milk_use):
     return milk_use > 0
 
 
-coffees = [latte, espresso, flat_white]
+coffees = [latte, espresso, flat_white, drip_coffee]
 
 
 class Component(Fact):
@@ -84,7 +94,7 @@ class Milk(Component):
 class Grinder(Component):
     """A fact representing the grinder component."""
     level = Field(s.And(s.Use(float), lambda l: 0.0 <= l <= 1.0), default=1.0)
-    state = Field(s.Or("grinding", "inactive", "blocked", "done"), default="inactive")
+    status = Field(s.Or("grinding", "inactive", "blocked", "done"), default="inactive")
     degree = Field(s.And(s.Use(int), lambda x: 1 <= x <= 5), default=3)
 
 
@@ -153,11 +163,11 @@ class CoffeeMachineRules(KnowledgeEngine):
     def startup(self):
         print("Coffee machine started.")
         yield CoffeeMachine()
-        yield Grinder(level=1.0)
+        yield Grinder(level=1.0, status="inactive", degree=3)
         yield Milk(level=1.0)
-        yield Water(level=1.0)
+        yield Water(level=1.0, scale=0.0, water_hardness="medium")
         # Also manipulate with temperature
-        yield Heater(temperature=0)
+        yield Heater()
         # And with this too
         yield MilkNozzle(status="inactive")
 
@@ -181,9 +191,10 @@ class CoffeeMachineRules(KnowledgeEngine):
     def make_coffee(self, c, n):
         print(f"Making {n}")
         self.declare(Brew(status="ready"))
+        logger.debug(f"{self.facts}")
 
     @Rule(CoffeeMachine(), AS.b << Brew(status="ready"),
-          AS.mn << MilkNozzle(),
+          AS.mn << MilkNozzle(status=W()),
           AS.g << Grinder(level=MATCH.beans_l),
           Milk(level=MATCH.milk_l),
           AS.w << Water(level=MATCH.water_l, scale=MATCH.scale),
@@ -191,15 +202,17 @@ class CoffeeMachineRules(KnowledgeEngine):
                          milk_use=MATCH.milk_u, beans_use=MATCH.beans_u),
           TEST(lambda milk_l, milk_u: milk_u <= milk_l),
           TEST(lambda beans_l, beans_u: beans_u <= beans_l),
-          UserInput(action=P(lambda x: x == Actions.MAKE_COFFEE)))
+          TEST(lambda water_l, water_u: water_u <= water_l),
+          UserInput(action=Actions.MAKE_COFFEE))
     def start_brewing(self, c, mn, n, w, b, g, water_l, water_u, scale):
         print(f"Start brewing {n}.")
         # check whether all conditions are met to brew coffee
+        logger.debug(f"{self.agenda}")
         self.modify(g, status="grinding")
         self.modify(b, status="in progress")
-        self.modify(mn, status="preparing")
         self.modify(c, step="water")
         self.modify(w, level=water_l - water_u, scale=scale + SCALE_AMOUNT)
+        logger.debug(f"{self.facts}")
 
     def prepare_nozzle(self, mn):
         block = bool(random.random() >= 0.5)
@@ -207,19 +220,19 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           AS.b << Brew(status="in progress"),
-          AS.c << Coffee(step=L("water"), milk_u=MATCH.milk_u, beans_use=MATCH.beans_u),
+          AS.c << Coffee(step="water", milk_use=MATCH.milk_u, beans_use=MATCH.beans_u),
           AS.g << Grinder(level=MATCH.beans_l, status="grinding"),
-          AS.mn << MilkNozzle(),
-          UserInput(action=L(Actions.MAKE_COFFEE)))
+          AS.mn << MilkNozzle(status=W()),
+          UserInput(action=Actions.MAKE_COFFEE))
     def grind_beans(self, beans_l, beans_u, milk_u, g, c, mn):
         print("Grinding ...")
         user_action = get_user_input([Actions.REGULATE_GRINDER, Actions.CONTINUE])
         self.modify(c, step="milk" if require_milk(milk_u) else None)
         self.modify(mn, status="preparing" if require_milk(milk_u) else "inactive")
-        self.modify(g, level=beans_l - beans_u, state="inactive")
         if user_action == Actions.REGULATE_GRINDER:
             self.declare(UserInput(action=Actions.REGULATE_GRINDER))
-        logging.info(self.agenda)
+        self.modify(g, level=beans_l - beans_u, status="inactive")
+        logger.info(self.agenda)
 
     @Rule(CoffeeMachine(),
           AS.b << Brew(status="in progress"),
@@ -234,6 +247,7 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           AS.b << Brew(status="in progress"),
+          Grinder(status="inactive"),
           UserInput(action=Actions.MAKE_COFFEE),
           MilkNozzle(status=L("nozzling") | L("inactive")))
     def brewing(self, b):
@@ -253,6 +267,7 @@ class CoffeeMachineRules(KnowledgeEngine):
         self.retract(f1)
 
     @Rule(CoffeeMachine(),
+          Brew(status="ready"),
           AS.w << Water(level=MATCH.water_l),
           AS.ui << UserInput(action=MATCH.act),
           Coffee(water_use=MATCH.water_u),
@@ -266,16 +281,17 @@ class CoffeeMachineRules(KnowledgeEngine):
             self.declare(UserInput(action=Actions.FILL_WATER))
 
     @Rule(CoffeeMachine(),
-          AS.w << Water(scale=MATCH.scale),
-          AS.ui << UserInput(action=P(lambda x: x == Actions.FILL_WATER)))
-    def fill_water(self, w, ui, scale):
+          AS.w << Water(),
+          AS.ui << UserInput(action=Actions.FILL_WATER))
+    def fill_water(self, w, ui):
         print("Add water to the coffee machine.")
         self.retract(ui)
-        self.modify(w, level=1.0, scale=scale)
-        logging.info(self.facts)
+        self.modify(w, level=1.0)
+        print(self.facts)
 
     @Rule(CoffeeMachine(),
           AS.m << Milk(level=MATCH.milk_l),
+          OR(MilkNozzle(status="preparing"), Brew(status="ready")),
           Coffee(milk_use=MATCH.milk_u),
           TEST(lambda milk_l, milk_u: milk_u > milk_l))
     def fill_milk(self, m):
@@ -300,7 +316,7 @@ class CoffeeMachineRules(KnowledgeEngine):
           AS.g << Grinder(level=MATCH.l))
     def regulate_grinder(self, ui, g, l):
         self.modify(ui, status="done")
-        self.modify(g, level=l, degree=regulate_grinder(), state="inactive")
+        self.modify(g, level=l, degree=regulate_grinder())
 
     @Rule(CoffeeMachine(),
           Heater(temperature=P(lambda x: x >= Heater.upper_threshold)))
@@ -332,14 +348,13 @@ class CoffeeMachineRules(KnowledgeEngine):
     def finish_action(self, ui):
         print("Finished action.")
         self.retract(ui)
-        logging.info(self.facts)
-        logging.info(self.agenda)
+        logger.info(self.agenda)
 
     @Rule(CoffeeMachine(),
           AS.ui << UserInput(action=Actions.SHOW_FACTS))
     def show_facts(self, ui):
         print("Showing facts...")
-        logging.info(self.facts)
+        print(self.facts)
         self.retract(ui)
 
     @Rule(CoffeeMachine(),

@@ -15,10 +15,11 @@ def configure_logging(minimal_level=logging.DEBUG):
     console_handler.addFilter(filter_maker(logging.WARNING))
     console_handler.setFormatter(formatter)
 
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.setLevel(minimal_level)
     logger.addHandler(console_handler)
     logger.addHandler(error_handler)
+    return logger
 
 
 def filter_maker(level):

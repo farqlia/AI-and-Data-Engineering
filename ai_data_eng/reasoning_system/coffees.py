@@ -15,4 +15,5 @@ class CoffeeType:
 latte = CoffeeType("latte", 0.3, 0.3, 0.1)
 flat_white = CoffeeType("flat white", 0.2, 0.3, 0.2)
 espresso = CoffeeType("espresso", 0.0, 0.1, 0.2)
+drip_coffee = CoffeeType("drip", 0.0, 0.5, 0.3)
 
