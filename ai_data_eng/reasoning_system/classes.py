@@ -43,6 +43,7 @@ class Actions(Enum):
 class Problems(Enum):
     MILK_FROTHER = " Insufficient foam is produced when the milk is frothed or milk sprays out of the professional fine foam frother"
     COFFEE_DISPOSING = " Coffee only comes out in drips when it is being prepared."
+    WATER_CONTAINER = "Water container is displaying information 'Fill water'"
 
 ACTIONS = [Actions.MAKE_COFFEE, Actions.FILL_WATER,
            Actions.SHOW_FACTS, Actions.DESCALE, Actions.CLEAR_NOZZLE,
@@ -271,12 +272,19 @@ class CoffeeMachineRules(KnowledgeEngine):
         self.retract(f1)
 
     @Rule(CoffeeMachine(),
-          Brew(status="ready"),
           AS.w << Water(level=MATCH.water_l),
-          AS.ui << UserInput(action=MATCH.act),
-          Coffee(water_use=MATCH.water_u),
-          TEST(lambda act: act != Actions.FILL_WATER),
-          TEST(lambda water_l, water_u: water_u > water_l),
+          OR(
+              AND(
+                  Brew(status="ready"),
+                      AS.ui << UserInput(action=MATCH.act),
+                      Coffee(water_use=MATCH.water_u),
+                      TEST(lambda act: act != Actions.FILL_WATER),
+                      TEST(lambda water_l, water_u: water_u > water_l)),
+              AND(
+                  AS.t << TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False),
+                TEST(lambda water_l: water_l <= 0.2),
+                UserInput(action=Actions.TROUBLESHOOT))
+          ),
           salience=2)
     def require_fill_water(self):
         print("Before proceeding you need to fill water.")
@@ -286,11 +294,15 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           AS.w << Water(),
-          AS.ui << UserInput(action=Actions.FILL_WATER))
-    def fill_water(self, w, ui):
+          AS.ui << UserInput(action=Actions.FILL_WATER),
+          # Here is wrong something :(
+          (AS.t << TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False)))
+    def fill_water(self, w, ui, t=None):
         print("Add water to the coffee machine.")
         self.retract(ui)
         self.modify(w, level=1.0)
+        if t:
+            self.modify(t, solved=True)
         # print(self.facts)
 
     @Rule(CoffeeMachine(),
@@ -364,10 +376,16 @@ class CoffeeMachineRules(KnowledgeEngine):
     @Rule(CoffeeMachine(),
           Water(scale=MATCH.scale),
           # Do not disrupt preparing coffee,
-          OR(AND(AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
-                 TEST(lambda scale: scale >= 0.8),
-                 UserInput(action=Actions.TROUBLESHOOT)),
-          AND(TEST(lambda scale: scale >= 1.0), NOT(UserInput()))),
+          OR(
+              AND(
+                  OR(
+                            AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
+                            AS.t <<  TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False)
+                        ),
+                    TEST(lambda scale: scale >= 0.8),
+                  UserInput(action=Actions.TROUBLESHOOT)),
+                AND(TEST(lambda scale: scale >= 1.0), NOT(UserInput()))
+          ),
           salience=1)
     def require_descaling(self, t=None):
         print("Before proceeding you need to descale machine.")
@@ -384,6 +402,7 @@ class CoffeeMachineRules(KnowledgeEngine):
         print(f"Descaling ...")
         self.retract(ui)
         self.modify(w, level=1.0, scale=0.0)
+        print(self.facts)
 
     @Rule(CoffeeMachine(),
           AS.ui << UserInput(action=Actions.TROUBLESHOOT))
@@ -401,6 +420,7 @@ class CoffeeMachineRules(KnowledgeEngine):
         print(f"Your problem was solved")
         self.retract(t)
         self.retract(ui)
+        print(self.facts)
 
     @Rule(CoffeeMachine(),
           AS.t << TroubleShooting(problem=Problems.COFFEE_DISPOSING, solved=False),
@@ -415,6 +435,12 @@ class CoffeeMachineRules(KnowledgeEngine):
           Water(scale=P(lambda x: x < 0.8)), salience=1)
     def solve_disposing_problem(self):
         print("No malfunctioning was found. Try using other coffee beans next time")
+
+    @Rule(CoffeeMachine(),
+          AS.t << TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False),
+          salience=1)
+    def solve_water_container_problem(self):
+        print("No malfunctioning with water container was found.")
 
 
 

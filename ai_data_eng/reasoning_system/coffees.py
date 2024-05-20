@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 HEATING_TEMPERATURE = 70
-SCALE_AMOUNT = 0.45
+SCALE_AMOUNT = 0.2
 
 
 @dataclass
