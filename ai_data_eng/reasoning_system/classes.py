@@ -294,12 +294,14 @@ class CoffeeMachineRules(KnowledgeEngine):
 
     @Rule(CoffeeMachine(),
           AS.w << Water(),
-          AS.ui << UserInput(action=Actions.FILL_WATER),
-          # Here is wrong something :(
-          (AS.t << TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False)))
-    def fill_water(self, w, ui, t=None):
+          OR(
+              AS.ui << UserInput(action=Actions.FILL_WATER),
+              AS.t << TroubleShooting(problem=Problems.WATER_CONTAINER, solved=False)
+          ))
+    def fill_water(self, w, ui=None, t=None):
         print("Add water to the coffee machine.")
-        self.retract(ui)
+        if ui:
+            self.retract(ui)
         self.modify(w, level=1.0)
         if t:
             self.modify(t, solved=True)
