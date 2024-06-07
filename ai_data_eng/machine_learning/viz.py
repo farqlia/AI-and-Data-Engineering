@@ -35,7 +35,6 @@ def visualize_classification_metrics(y_true, y_pred, labels, name=None, ax=None)
                     fontdict=fontdict)
 
     ax.set_title(f"Classification metrics {' - ' + name if name else ''}")
-    plt.show()
 
 
 def visualize_confusion_matrix(y_true, y_pred, labels, name=None):
