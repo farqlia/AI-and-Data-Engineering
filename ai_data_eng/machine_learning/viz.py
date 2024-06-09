@@ -87,12 +87,13 @@ def visualize_compare_algorithms(X, y, algorithms, names):
         values = [precision_score(y, y_pred, average='macro'),
                   recall_score(y, y_pred, average='macro'),
                   f1_score(y, y_pred, average='macro'),
-                  accuracy_score(y, y_pred)]
+                  accuracy_score(y, y_pred),
+                  balanced_accuracy_score(y, y_pred)]
         results.append(values)
 
     results = np.array(results)
 
-    metrics = ['precision', 'recall', 'fscore', 'accuracy']
+    metrics = ['precision', 'recall', 'fscore', 'accuracy', 'balanced_accuracy']
 
     fig, ax = plt.subplots()
     ax.pcolormesh(results, cmap='cool')
