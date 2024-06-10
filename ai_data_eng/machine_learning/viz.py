@@ -4,15 +4,17 @@ import numpy as np
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, precision_score, recall_score, \
     precision_recall_fscore_support, confusion_matrix, ConfusionMatrixDisplay
 
+from ai_data_eng.machine_learning.utils import class_accuracy
+
 fontdict = {'family' : 'Calibri',
     'weight' : 'bold',
     'size' : 22}
 
 def visualize_classification_metrics(y_true, y_pred, labels, name=None, ax=None):
-    metrics = ['precision', 'recall', 'fscore', 'support']
+    metrics = ['precision', 'recall', 'fscore']
     values = np.array(precision_recall_fscore_support(y_true, y_pred, labels=labels))
 
-    values[-1, :] = values[-1, :] / np.sum(values[-1, :])
+    values = values[:3]
 
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
